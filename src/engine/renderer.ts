@@ -147,6 +147,8 @@ export function drawBar(ctx: CanvasRenderingContext2D, x: number, y: number, w: 
   ctx.fillRect(x, y, Math.round(w * Math.max(0, Math.min(1, fraction))), h);
 }
 
+const mod = (n: number, m: number): number => ((n % m) + m) % m;
+
 /**
  * A deterministic skyline of blocks, drawn in world space at a parallax
  * factor. Seed picks a different skyline per layer.
@@ -159,8 +161,8 @@ export function drawBackdrop(ctx: CanvasRenderingContext2D, camera: Camera, para
   const first = Math.floor(o.x / 40) - 1;
   const last = Math.floor((o.x + camera.viewW) / 40) + 1;
   for (let i = first; i <= last; i++) {
-    const h = 30 + ((i * 7919 + seed * 104729) % 71);
-    const w = 24 + ((i * 31 + seed * 17) % 14);
+    const h = 30 + mod(i * 7919 + seed * 104729, 71);
+    const w = 24 + mod(i * 31 + seed * 17, 14);
     ctx.fillRect(i * 40, VIEW_H - h + o.y, w, h);
   }
   ctx.restore();
