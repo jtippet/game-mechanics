@@ -120,7 +120,7 @@ key codes or pointer events.
 | `#`  | solid         | blocks all four sides                                  |
 | `-`  | one-way       | blocks only a body falling onto it from above          |
 | `^`  | spike         | non-solid; a body overlapping it is "hurt"             |
-| `\|` | climbable     | non-solid; a body overlapping it may climb             |
+| `\|` | climbable     | solid; a body touching its side may cling and climb    |
 | `@`  | spawn         | empty; records the player start                        |
 | `*`  | pickup        | empty; records a pickup position (demos decide what)   |
 | `k`  | key           | empty; records the key position                        |
