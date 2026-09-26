@@ -1,0 +1,4 @@
+:root { color-scheme: dark; --bg: #0b1020; --panel: #141a30; --edge: #2c3448; --text: #e6e9f0; --muted: #9aa3b8; --accent: #f2b632; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.4 system-ui, sans-serif; }
+#app { max-width: 1000px; margin: 0 auto; padding: 12px; }

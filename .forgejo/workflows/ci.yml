@@ -1,0 +1,34 @@
+# mechanics CI (homelab forge). Self-contained: no external actions; checkout is
+# a plain git fetch of the pushed sha with the run's own token. One docker job,
+# no secrets: there is no private registry dependency. No deploy job — see
+# README.md "Deploy".
+name: ci
+on: [push]
+
+jobs:
+  web:
+    runs-on: docker
+    container:
+      image: docker.io/library/node:22-bookworm
+    steps:
+      - name: checkout
+        run: |
+          set -e
+          mkdir src
+          cd src
+          git init -q
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@code.tippet.net/${{ github.repository }}.git"
+          git fetch --depth 1 origin "$GITHUB_SHA"
+          git checkout -q FETCH_HEAD
+
+      - name: install, typecheck, test, build
+        run: |
+          set -e
+          cd src
+          command -v pnpm >/dev/null 2>&1 || corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+          pnpm install --frozen-lockfile
+          pnpm typecheck
+          pnpm test
+          pnpm build
+          test -f dist/index.html
