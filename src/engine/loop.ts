@@ -13,7 +13,7 @@ export class Loop {
 
   /** Advance by elapsed seconds; returns how many ticks ran. Pure, for tests. */
   advance(elapsed: number): number {
-    this.acc += Math.min(elapsed, MAX_CATCHUP);
+    this.acc += Math.max(0, Math.min(elapsed, MAX_CATCHUP));
     let n = 0;
     while (this.acc >= DT) {
       this.tick();

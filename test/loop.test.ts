@@ -19,4 +19,12 @@ describe('Loop.advance', () => {
     expect(n).toBeLessThanOrEqual(15);
     expect(ticks).toBe(n);
   });
+
+  it('ignores a clock that steps backwards', () => {
+    let ticks = 0;
+    const l = new Loop(() => { ticks++; }, () => {});
+    expect(l.advance(-5)).toBe(0);
+    expect(l.advance(DT)).toBe(1);        // the negative step left no debt behind
+    expect(ticks).toBe(1);
+  });
 });
