@@ -62,9 +62,10 @@ describe('moveBody', () => {
   });
 
   it('never tunnels through a one-tile wall at high speed', () => {
-    const b = body(20, 98, 6000, 0);            // 100 px per tick, wall is 16 px thick
+    const b = body(20, 98, 12000, 0);           // 200 px per tick; the wall at x 144 is 16 px thick
     moveBody(ROOM, b);
-    expect(b.x).toBeCloseTo(120, 9);
+    expect(b.x).toBe(144 - 12);
+    expect(b.vx).toBe(0);
   });
 
   it('reports a wall it is resting against with zero velocity', () => {
