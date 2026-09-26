@@ -3596,7 +3596,8 @@ describe('hit points', () => {
     const input = new Input();
     for (let i = 0; i < 900; i++) step(s, input, ['right']);
     expect(s.deaths).toBeGreaterThanOrEqual(1);
-    expect(p.hp).toBeGreaterThan(0);
+    for (let i = 0; i < 60; i++) step(s, input);       // let any dying window finish
+    expect(p.hp).toBe(MAX_HP);
   });
 });
 
@@ -3604,9 +3605,11 @@ describe('hazards', () => {
   it('a spike kills and respawns at the start', () => {
     const s = new HazardScene(SPIKES);
     const input = new Input();
-    for (let i = 0; i < 120; i++) step(s, input, ['right']);
+    let ticks = 0;
+    while (s.deaths === 0 && ticks++ < 200) step(s, input, ['right']);
     expect(s.deaths).toBe(1);
     for (let i = 0; i < 40; i++) step(s, input);
+    expect(s.deaths).toBe(1);
     expect(s.player.body.x).toBe(18);
   });
 });
@@ -3615,7 +3618,8 @@ describe('checkpoint', () => {
   it('dying after touching a flag respawns at the flag', () => {
     const s = new CheckpointScene(FLAGS);
     const input = new Input();
-    for (let i = 0; i < 300; i++) step(s, input, ['right']);
+    let ticks = 0;
+    while (s.deaths === 0 && ticks++ < 400) step(s, input, ['right']);
     expect(s.active).toBe(0);
     expect(s.deaths).toBe(1);
     for (let i = 0; i < 60; i++) step(s, input);
@@ -3634,7 +3638,7 @@ Expected: FAIL, modules missing.
 ```ts
 import { Player } from '../engine/entities/player';
 import { overlaps } from '../engine/geom';
-import { PALETTE } from '../engine/renderer';
+import { drawText, PALETTE } from '../engine/renderer';
 import { BaseScene } from '../engine/scene';
 import { Respawner, type Spot } from './arena';
 import { BASE_CONTROLS, type Demo } from './demo';
@@ -3730,7 +3734,7 @@ export class HpScene extends BaseScene {
       ctx.fillStyle = i < p.hp ? ACCENT : PALETTE.climb;
       ctx.fillRect(4 + i * 10, 4, 8, 6);
     }
-    this.hud.forEach((line, i) => { ctx.font = '8px monospace'; ctx.textBaseline = 'top'; ctx.fillStyle = PALETTE.text; ctx.fillText(line, 4, 14 + i * 10); });
+    this.hud.forEach((line, i) => drawText(ctx, line, 4, 14 + i * 10));
   }
 }
 
@@ -4249,8 +4253,8 @@ const PLANKS = [
   '########',
   '#......#',
   '#......#',
-  '#.---..#',
   '#......#',
+  '#.---..#',
   '#@.....#',
   '########',
 ];
@@ -4268,20 +4272,20 @@ describe('one-way platforms', () => {
     for (let i = 0; i < 12; i++) step(s, input, ['right']);
     step(s, input, ['jump']);
     for (let i = 0; i < 70; i++) step(s, input);
-    expect(s.player.body.y).toBe(48 - 14);
+    expect(s.player.body.y).toBe(64 - 14);
     expect(s.player.contacts.onGround).toBe(true);
   });
 
   it('drops through with down + jump', () => {
     const s = new BaseScene(PLANKS, { player: spawn => new OneWayPlayer(spawn) });
-    s.player.moveTo({ x: 32, y: 32 });
+    s.player.moveTo({ x: 32, y: 48 });                 // standing on the plank (top y 64)
     const input = new Input();
     step(s, input);
     step(s, input);
     expect(s.player.contacts.onGround).toBe(true);
     step(s, input, ['down', 'jump']);
     for (let i = 0; i < 30; i++) step(s, input);
-    expect(s.player.body.y).toBe(80 - 14);
+    expect(s.player.body.y).toBe(96 - 14);
   });
 });
 
