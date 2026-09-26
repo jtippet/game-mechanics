@@ -63,4 +63,17 @@ describe('BaseScene + Player', () => {
     expect(s.player.body.x).toBe(50);
     expect(s.player.body.vx).toBe(0);
   });
+
+  it('controlLock ignores horizontal input for exactly that many ticks', () => {
+    const s = new BaseScene(ROWS);
+    const input = new Input();
+    run(s, input, 2);
+    s.player.controlLock = 2;
+    run(s, input, 1, ['right']);
+    expect(s.player.body.vx).toBe(0);
+    run(s, input, 1, ['right']);
+    expect(s.player.body.vx).toBe(0);
+    run(s, input, 1, ['right']);
+    expect(s.player.body.vx).toBeGreaterThan(0);
+  });
 });

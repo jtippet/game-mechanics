@@ -54,13 +54,14 @@ export class Player implements Entity {
   }
 
   protected control(_scene: BaseScene, input: Input): void {
-    if (this.controlLock > 0) this.controlLock--;
-    const dir = this.controlLock > 0 ? 0 : (input.held('right') ? 1 : 0) - (input.held('left') ? 1 : 0);
+    const locked = this.controlLock > 0;
+    if (locked) this.controlLock--;
+    const dir = locked ? 0 : (input.held('right') ? 1 : 0) - (input.held('left') ? 1 : 0);
     const onGround = this.contacts.onGround;
     if (dir !== 0) {
       this.body.vx = approach(this.body.vx, dir * this.runSpeed, (onGround ? this.accel : this.airAccel) * DT);
       this.facing = dir as 1 | -1;
-    } else if (this.controlLock === 0) {
+    } else if (!locked) {
       this.body.vx = approach(this.body.vx, 0, (onGround ? this.friction : this.airAccel * 0.5) * DT);
     }
     if (input.pressed('jump') && this.canJump()) this.jump();
