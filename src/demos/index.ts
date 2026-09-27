@@ -8,6 +8,9 @@ import { dash } from './dash';
 import { enemyPatrol } from './enemy-patrol';
 import { rangedWeapon } from './ranged-weapon';
 import { meleeAttack } from './melee-attack';
+import { hitPoints } from './hit-points';
+import { hazards } from './hazards';
+import { checkpoint } from './checkpoint';
 
 /** Menu order. Adding a demo is one file and one line here. */
 export const catalogue: readonly Demo[] = [
@@ -20,6 +23,9 @@ export const catalogue: readonly Demo[] = [
   enemyPatrol,
   rangedWeapon,
   meleeAttack,
+  hitPoints,
+  hazards,
+  checkpoint,
 ];
 
 export function findDemo(id: string): Demo | undefined {
