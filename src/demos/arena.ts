@@ -1,6 +1,7 @@
 import { Patroller } from '../engine/entities/patroller';
 import type { Vec } from '../engine/geom';
 import { overlaps } from '../engine/geom';
+import { drawActor, PALETTE } from '../engine/renderer';
 import type { BaseScene } from '../engine/scene';
 
 export const ARENA = [
@@ -18,7 +19,19 @@ export const ARENA = [
   '########################################',
 ];
 
-export interface Spot { cell: Vec; dir: 1 | -1; turnAtLedges: boolean }
+export interface Spot { cell: Vec; dir: 1 | -1; turnAtLedges: boolean; seek?: boolean }
+
+/** A patroller that naively walks toward the player's x, ledges or not. */
+export class Seeker extends Patroller {
+  override update(scene: BaseScene): void {
+    this.dir = scene.player.body.x < this.body.x ? -1 : 1;
+    super.update(scene);
+  }
+
+  override draw(ctx: CanvasRenderingContext2D): void {
+    drawActor(ctx, this.body, PALETTE.danger, this.dir);
+  }
+}
 
 export const ARENA_SPOTS: Spot[] = [
   { cell: { x: 18 * 16, y: 4 * 16 }, dir: -1, turnAtLedges: true },
@@ -41,7 +54,9 @@ export class Respawner {
   }
 
   private spawn(spot: Spot): void {
-    const p = new Patroller(spot.cell, spot.dir, spot.turnAtLedges);
+    const p = spot.seek
+      ? new Seeker(spot.cell, spot.dir, false)
+      : new Patroller(spot.cell, spot.dir, spot.turnAtLedges);
     this.alive.set(p, spot);
     this.scene.entities.push(p);
   }
@@ -50,12 +65,12 @@ export class Respawner {
     return [...this.alive.keys()];
   }
 
-  kill(p: Patroller): void {
+  kill(p: Patroller, delay = RESPAWN_TICKS): void {
     const spot = this.alive.get(p);
     if (!spot) return;
     p.dead = true;
     this.alive.delete(p);
-    this.pending.push({ spot, at: this.scene.ticks + RESPAWN_TICKS });
+    this.pending.push({ spot, at: this.scene.ticks + delay });
   }
 
   /**

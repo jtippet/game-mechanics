@@ -32,6 +32,8 @@ const SPOTS: Spot[] = [
 ];
 
 export class HpPlayer extends Player {
+  /** The enemy platforms sit four tiles up; the base 230 px/s jump clears fewer than three. */
+  override jumpSpeed = 290;
   hp = MAX_HP;
   invuln = 0;
 

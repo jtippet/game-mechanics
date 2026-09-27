@@ -58,6 +58,20 @@ describe('hit points', () => {
   });
 });
 
+describe('hit points jump', () => {
+  it('a full jump clears the four-tile enemy platforms', () => {
+    const TALL = ['############', ...Array.from({ length: 7 }, () => '#..........#'), '#@.........#', '############'];
+    const s = new HpScene(TALL, []);
+    const p = s.player as HpPlayer;
+    const input = new Input();
+    step(s, input);
+    const y0 = p.body.y;
+    let top = y0;
+    for (let i = 0; i < 100; i++) { step(s, input, i === 0 ? ['jump'] : []); top = Math.min(top, p.body.y); }
+    expect(y0 - top).toBeGreaterThanOrEqual(64);
+  });
+});
+
 describe('hazards', () => {
   it('a spike kills and respawns at the start', () => {
     const s = new HazardScene(SPIKES);

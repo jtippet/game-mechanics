@@ -134,7 +134,9 @@ export function drawFlag(ctx: CanvasRenderingContext2D, x: number, y: number, ra
 }
 
 export function drawText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string = PALETTE.text): void {
-  ctx.font = '8px monospace';
+  // FONT-PROBE: font is normally fixed at '8px monospace'; this reads a window global so
+  // the font-probe branch can switch fonts from browser_evaluate without a rebuild. Not for merge.
+  ctx.font = (typeof window !== 'undefined' && (window as any).__hudFont) || '8px monospace';
   ctx.textBaseline = 'top';
   ctx.fillStyle = color;
   ctx.fillText(text, x, y);
