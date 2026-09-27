@@ -58,7 +58,7 @@ export class MineScene extends HpScene {
   }
   protected override afterUpdate(): void {
     this.tickDying();
-    this.hud = [`deaths ${this.deaths}`, 'a mine arms when you step on it; get clear before it blows'];
+    this.hud = [`deaths ${this.deaths}`, 'a mine arms underfoot; get clear before it blows'];
   }
 }
 

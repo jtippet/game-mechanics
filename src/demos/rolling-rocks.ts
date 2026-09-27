@@ -28,7 +28,7 @@ export class RockScene extends HpScene {
   }
   protected override afterUpdate(): void {
     if (!this.tickDying()) for (const r of this.rocks) if (r.crushed && this.damage(r.body.x + 8)) this.crushes++;
-    this.hud = [`crushes ${this.crushes}`, 'the rock shoves you; pinned against a wall, you lose a heart'];
+    this.hud = [`crushes ${this.crushes}`, 'the rock shoves you; pinned to a wall costs a heart'];
   }
 }
 
