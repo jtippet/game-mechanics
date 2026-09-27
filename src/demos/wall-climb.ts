@@ -30,7 +30,6 @@ const LEVEL = [
 export class WallPlayer extends Player {
   clinging = false;
   private climbUp = false;
-  private kicking = false;
 
   protected override control(scene: BaseScene, input: Input): void {
     const b = this.body;
@@ -48,7 +47,6 @@ export class WallPlayer extends Player {
       this.facing = side < 0 ? 1 : -1;
       this.controlLock = 10;
       this.clinging = false;
-      this.kicking = true;
       this.onJump();
       return;
     }
@@ -56,17 +54,7 @@ export class WallPlayer extends Player {
   }
 
   protected override integrate(scene: BaseScene): void {
-    if (!this.clinging) {
-      if (this.kicking) {
-        const savedVy = this.body.vy;
-        super.integrate(scene);
-        this.body.vy = savedVy;
-        this.kicking = false;
-      } else {
-        super.integrate(scene);
-      }
-      return;
-    }
+    if (!this.clinging) { super.integrate(scene); return; }
     this.body.vy = this.climbUp ? -CLIMB_SPEED : SLIDE_SPEED;
     this.prevBottom = this.body.y + this.body.h;
     this.contacts = moveBody(scene.level, this.body);
