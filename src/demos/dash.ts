@@ -71,7 +71,7 @@ export class DashPlayer extends Player {
   }
 }
 
-class DashScene extends BaseScene {
+export class DashScene extends BaseScene {
   falls = 0;
 
   protected override afterUpdate(): void {
@@ -84,6 +84,14 @@ class DashScene extends BaseScene {
     super.drawHud(ctx);
     const p = this.player as DashPlayer;
     drawBar(ctx, 4, 26, 60, 4, 1 - p.cooldown / (DASH_TICKS + COOLDOWN_TICKS), ACCENT);
+  }
+
+  override respawn(): void {
+    super.respawn();
+    const p = this.player as DashPlayer;
+    p.dashing = 0;
+    p.cooldown = 0;
+    p.trail = [];
   }
 }
 

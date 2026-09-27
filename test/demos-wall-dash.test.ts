@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DashPlayer, DASH_SPEED } from '../src/demos/dash';
+import { DashPlayer, DASH_SPEED, DashScene } from '../src/demos/dash';
 import { WallPlayer } from '../src/demos/wall-climb';
 import type { Action } from '../src/engine/input';
 import { Input } from '../src/engine/input';
@@ -73,5 +73,30 @@ describe('dash', () => {
     step(s, input, ['act']);
     expect(p.dashing).toBe(0);                                  // still cooling down
     expect(p.cooldown).toBeGreaterThan(0);
+  });
+
+  it('dying mid-dash respawns without the dash still running', () => {
+    const s = new DashScene(
+      [
+        '################',
+        '#..............#',
+        '#..............#',
+        '#@.^^^^^^^^....#',
+        '################',
+      ],
+      { player: spawn => new DashPlayer(spawn) }
+    );
+    const p = s.player as DashPlayer;
+    const input = new Input();
+    step(s, input);
+    step(s, input, ['act']);                  // dash right into the spikes
+    let ticks = 0;
+    while (s.falls === 0 && ticks++ < 30) step(s, input);
+    expect(s.falls).toBe(1);
+    expect(p.dashing).toBe(0);
+    expect(p.trail).toEqual([]);
+    expect(p.body.x).toBe(18);                // standing at spawn, not flying away
+    step(s, input);
+    expect(p.body.x).toBe(18);
   });
 });
