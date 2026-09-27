@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DT } from '../src/engine/constants';
 import type { Body } from '../src/engine/physics';
-import { contacts, moveBody } from '../src/engine/physics';
+import { contacts, isSolidKind, moveBody } from '../src/engine/physics';
 import { parseLevel } from '../src/engine/tilemap';
 
 const ROOM = parseLevel([
@@ -78,5 +78,22 @@ describe('moveBody', () => {
     const b = body(40, 40, 60, 0);
     moveBody(ROOM, b);
     expect(b.x).toBeCloseTo(40 + 60 * DT, 9);
+  });
+});
+
+describe('expansion solidity', () => {
+  it('ice, sand and belts are solid; ladders are not', () => {
+    const l = parseLevel(['########', '#......#', '#..H...#', '#@is><.#', '########']);
+    expect(isSolidKind('ice')).toBe(true);
+    expect(isSolidKind('sand')).toBe(true);
+    expect(isSolidKind('beltR')).toBe(true);
+    expect(isSolidKind('beltL')).toBe(true);
+    expect(isSolidKind('ladder')).toBe(false);
+    const b = { x: 34, y: 30, w: 12, h: 14, vx: 0, vy: 300 };
+    for (let i = 0; i < 20; i++) { b.vy = 300; moveBody(l, b); }
+    expect(b.y).toBe(48 - 14);                       // landed on the ice at row 3
+    const up = { x: 50, y: 34, w: 12, h: 14, vx: 0, vy: -100 };
+    moveBody(l, up);
+    expect(up.vy).toBe(-100);                        // ladder cell did not block
   });
 });

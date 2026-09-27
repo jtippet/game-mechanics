@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cellsUnder, hazardAt, parseLevel, setTile, tileAt, touchesKind } from '../src/engine/tilemap';
+import { cellsUnder, hazardAt, parseLevel, setTile, surfaceUnder, tileAt, touchesKind } from '../src/engine/tilemap';
 
 const ROWS = [
   '######',
@@ -72,5 +72,40 @@ describe('queries', () => {
     const l = parseLevel(ROWS);
     expect(touchesKind(l, { x: 47, y: 34, w: 4, h: 4 }, 'climb')).toBe(true);
     expect(touchesKind(l, { x: 20, y: 20, w: 4, h: 4 }, 'climb')).toBe(false);
+  });
+});
+
+describe('expansion tiles and markers', () => {
+  const ROWS = [
+    '##########',
+    '#L..P..Q.#',
+    '#~.M.F.R.#',
+    '#H..T..P.#',
+    '#@.......#',
+    '#is><.Q..#',
+    '##########',
+  ];
+  it('parses the new kinds and records every marker in pixels', () => {
+    const l = parseLevel(ROWS);
+    expect(tileAt(l, 1, 5)).toBe('ice');
+    expect(tileAt(l, 2, 5)).toBe('sand');
+    expect(tileAt(l, 3, 5)).toBe('beltR');
+    expect(tileAt(l, 4, 5)).toBe('beltL');
+    expect(tileAt(l, 1, 3)).toBe('ladder');
+    expect(l.levers).toEqual([{ x: 16, y: 16 }]);
+    expect(l.portals).toEqual([{ id: 'P', x: 64, y: 16 }, { id: 'Q', x: 112, y: 16 }, { id: 'P', x: 112, y: 48 }, { id: 'Q', x: 96, y: 80 }]);
+    expect(l.slides).toEqual([{ x: 16, y: 32 }]);
+    expect(l.mines).toEqual([{ x: 48, y: 32 }]);
+    expect(l.jets).toEqual([{ x: 80, y: 32 }]);
+    expect(l.rocks).toEqual([{ x: 112, y: 32 }]);
+    expect(l.turrets).toEqual([{ x: 64, y: 48 }]);
+    for (const c of [1, 4, 7]) expect(tileAt(l, c, 1)).toBe('empty');
+  });
+  it('surfaceUnder names the tile under the feet, by the widest overlap', () => {
+    const l = parseLevel(ROWS);
+    expect(surfaceUnder(l, { x: 17, y: 66, w: 12, h: 14 })).toBe('ice');        // fully over col 1
+    expect(surfaceUnder(l, { x: 26, y: 66, w: 12, h: 14 })).toBe('ice');        // 26..38 → 6 px ice (26..32), 6 px sand (32..38): tie → first column (ice) wins
+    expect(surfaceUnder(l, { x: 28, y: 66, w: 12, h: 14 })).toBe('sand');       // 4 px ice, 8 px sand
+    expect(surfaceUnder(l, { x: 17, y: 40, w: 12, h: 14 })).toBe(null);        // in the air
   });
 });

@@ -26,6 +26,13 @@ export const PALETTE = {
   text: '#e6e9f0',
   muted: '#9aa3b8',
   danger: '#e85a5a',
+  ice: '#8fd3ff',
+  iceSheen: '#d9f2ff',
+  sand: '#c9b27a',
+  sandDot: '#a8915a',
+  belt: '#2a2f3d',
+  beltChevron: '#6b7590',
+  ladder: '#b08a5a',
 } as const;
 
 export function setupCanvas(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
@@ -37,7 +44,7 @@ export function setupCanvas(canvas: HTMLCanvasElement): CanvasRenderingContext2D
   return ctx;
 }
 
-export function drawLevel(ctx: CanvasRenderingContext2D, level: Level, camera: Camera): void {
+export function drawLevel(ctx: CanvasRenderingContext2D, level: Level, camera: Camera, ticks = 0): void {
   const c0 = Math.max(0, Math.floor(camera.x / TILE));
   const c1 = Math.min(level.cols - 1, Math.floor((camera.x + camera.viewW) / TILE));
   const r0 = Math.max(0, Math.floor(camera.y / TILE));
@@ -46,7 +53,8 @@ export function drawLevel(ctx: CanvasRenderingContext2D, level: Level, camera: C
     for (let col = c0; col <= c1; col++) {
       const x = col * TILE;
       const y = row * TILE;
-      switch (tileAt(level, col, row)) {
+      const kind = tileAt(level, col, row);
+      switch (kind) {
         case 'solid':
           ctx.fillStyle = PALETTE.tile;
           ctx.fillRect(x, y, TILE, TILE);
@@ -78,6 +86,31 @@ export function drawLevel(ctx: CanvasRenderingContext2D, level: Level, camera: C
           ctx.fillRect(x + 2, y + 2, TILE - 4, 1);
           ctx.fillRect(x + 2, y + 2, 1, TILE - 4);
           ctx.fillRect(x + 6, y + 7, 3, 4);
+          break;
+        case 'ice':
+          ctx.fillStyle = PALETTE.ice; ctx.fillRect(x, y, TILE, TILE);
+          ctx.fillStyle = PALETTE.iceSheen; ctx.fillRect(x + 2, y + 2, 6, 1); ctx.fillRect(x + 9, y + 5, 4, 1);
+          break;
+        case 'sand':
+          ctx.fillStyle = PALETTE.sand; ctx.fillRect(x, y, TILE, TILE);
+          ctx.fillStyle = PALETTE.sandDot; ctx.fillRect(x + 3, y + 4, 1, 1); ctx.fillRect(x + 9, y + 7, 1, 1); ctx.fillRect(x + 6, y + 11, 1, 1); ctx.fillRect(x + 12, y + 12, 1, 1);
+          break;
+        case 'beltR':
+        case 'beltL': {
+          ctx.fillStyle = PALETTE.belt; ctx.fillRect(x, y, TILE, TILE);
+          ctx.fillStyle = PALETTE.beltChevron;
+          const dir = kind === 'beltR' ? 1 : -1;
+          const phase = ((ticks >> 2) * dir) & 7;           // chevrons crawl in the belt's direction
+          for (let i = 0; i < 2; i++) {
+            const cx = x + ((i * 8 + phase) & 15);
+            ctx.fillRect(cx, y + 6, 2, 1); ctx.fillRect(cx + (dir > 0 ? 2 : -2), y + 7, 2, 2); ctx.fillRect(cx, y + 9, 2, 1);
+          }
+          break;
+        }
+        case 'ladder':
+          ctx.fillStyle = PALETTE.ladder;
+          ctx.fillRect(x + 3, y, 2, TILE); ctx.fillRect(x + 11, y, 2, TILE);
+          ctx.fillRect(x + 5, y + 4, 6, 1); ctx.fillRect(x + 5, y + 12, 6, 1);
           break;
         default:
           break;

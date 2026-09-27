@@ -1,8 +1,11 @@
 import { TILE } from './constants';
 import type { Rect, Vec } from './geom';
 import { overlaps } from './geom';
+import { isSolidKind } from './physics';
 
-export type TileKind = 'empty' | 'solid' | 'oneway' | 'spike' | 'climb' | 'door';
+export type TileKind = 'empty' | 'solid' | 'oneway' | 'spike' | 'climb' | 'door' | 'ice' | 'sand' | 'beltR' | 'beltL' | 'ladder';
+
+export interface PortalMarker { id: 'P' | 'Q'; x: number; y: number }
 
 export interface Level {
   cols: number;
@@ -12,6 +15,13 @@ export interface Level {
   pickups: Vec[];         // pixel top-left of each '*' cell
   keys: Vec[];            // pixel top-left of each 'k' cell
   doors: Vec[];           // pixel top-left of each 'd' cell
+  levers: Vec[];           // pixel top-left of each 'L' cell
+  portals: PortalMarker[]; // pixel top-left of each 'P'/'Q' cell
+  slides: Vec[];           // pixel top-left of each '~' cell
+  mines: Vec[];            // pixel top-left of each 'M' cell
+  jets: Vec[];             // pixel top-left of each 'F' cell
+  rocks: Vec[];            // pixel top-left of each 'R' cell
+  turrets: Vec[];          // pixel top-left of each 'T' cell
   pixelWidth: number;
   pixelHeight: number;
 }
@@ -20,7 +30,9 @@ export interface Cell { col: number; row: number; kind: TileKind }
 
 const CHARS: Record<string, TileKind> = {
   '.': 'empty', '#': 'solid', '-': 'oneway', '^': 'spike', '|': 'climb', 'd': 'door',
+  'i': 'ice', 's': 'sand', '>': 'beltR', '<': 'beltL', 'H': 'ladder',
   '@': 'empty', '*': 'empty', 'k': 'empty',
+  'L': 'empty', 'P': 'empty', 'Q': 'empty', '~': 'empty', 'M': 'empty', 'F': 'empty', 'R': 'empty', 'T': 'empty',
 };
 
 export function parseLevel(rows: readonly string[]): Level {
@@ -30,6 +42,13 @@ export function parseLevel(rows: readonly string[]): Level {
   const pickups: Vec[] = [];
   const keys: Vec[] = [];
   const doors: Vec[] = [];
+  const levers: Vec[] = [];
+  const portals: PortalMarker[] = [];
+  const slides: Vec[] = [];
+  const mines: Vec[] = [];
+  const jets: Vec[] = [];
+  const rocks: Vec[] = [];
+  const turrets: Vec[] = [];
   let spawn: Vec | undefined;
   for (let r = 0; r < rows.length; r++) {
     const row = rows[r];
@@ -46,10 +65,21 @@ export function parseLevel(rows: readonly string[]): Level {
       } else if (ch === '*') pickups.push(px);
       else if (ch === 'k') keys.push(px);
       else if (ch === 'd') doors.push(px);
+      else if (ch === 'L') levers.push(px);
+      else if (ch === 'P' || ch === 'Q') portals.push({ id: ch, x: px.x, y: px.y });
+      else if (ch === '~') slides.push(px);
+      else if (ch === 'M') mines.push(px);
+      else if (ch === 'F') jets.push(px);
+      else if (ch === 'R') rocks.push(px);
+      else if (ch === 'T') turrets.push(px);
     }
   }
   if (!spawn) throw new Error("level has no spawn '@'");
-  return { cols, rows: rows.length, tiles, spawn, pickups, keys, doors, pixelWidth: cols * TILE, pixelHeight: rows.length * TILE };
+  return {
+    cols, rows: rows.length, tiles, spawn, pickups, keys, doors,
+    levers, portals, slides, mines, jets, rocks, turrets,
+    pixelWidth: cols * TILE, pixelHeight: rows.length * TILE,
+  };
 }
 
 /** Out of bounds is solid: every level is boxed in without needing a border. */
@@ -84,4 +114,19 @@ export function touchesKind(level: Level, r: Rect, kind: TileKind): boolean {
 export function hazardAt(level: Level, r: Rect): boolean {
   return cellsUnder(level, r).some(c =>
     c.kind === 'spike' && overlaps(r, { x: c.col * TILE, y: c.row * TILE + TILE / 2, w: TILE, h: TILE / 2 }));
+}
+
+/** The kind of blocking tile under the body's feet (widest x-overlap wins, first column on a tie), or null in the air. */
+export function surfaceUnder(level: Level, body: Rect): TileKind | null {
+  const probe = { x: body.x, y: body.y + body.h, w: body.w, h: 0.01 };
+  let best: TileKind | null = null;
+  let bestOverlap = 0;
+  for (const c of cellsUnder(level, probe)) {
+    if (!isSolidKind(c.kind)) continue;
+    const left = Math.max(body.x, c.col * TILE);
+    const right = Math.min(body.x + body.w, (c.col + 1) * TILE);
+    const overlap = right - left;
+    if (overlap > bestOverlap) { bestOverlap = overlap; best = c.kind; }
+  }
+  return best;
 }

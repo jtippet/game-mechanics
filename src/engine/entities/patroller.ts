@@ -2,6 +2,7 @@ import { DT, TILE } from '../constants';
 import type { Vec } from '../geom';
 import type { Body } from '../physics';
 import { moveBody } from '../physics';
+import { isSolidKind } from '../physics';
 import { drawActor, PALETTE } from '../renderer';
 import type { BaseScene, Entity } from '../scene';
 import { cellsUnder } from '../tilemap';
@@ -31,7 +32,7 @@ export class Patroller implements Entity {
       // report a floor that isn't there yet, letting the patroller overshoot
       // the ledge by a tick before turning.
       const ahead = { x: aheadX, y: this.body.y + this.body.h, w: 0.5, h: 1 };
-      const floorAhead = cellsUnder(scene.level, ahead).some(k => k.kind === 'solid' || k.kind === 'oneway' || k.kind === 'door' || k.kind === 'climb');
+      const floorAhead = cellsUnder(scene.level, ahead).some(k => isSolidKind(k.kind) || k.kind === 'oneway');
       if (!floorAhead) {
         // The turn happens right at the tile boundary, but body.x got there
         // by ~300 accumulated += speed*DT steps, so it can be a few ULPs

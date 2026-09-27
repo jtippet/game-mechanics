@@ -61,7 +61,7 @@ export class BaseScene implements Scene {
     this.drawBackground(ctx, camera);
     ctx.save();
     camera.apply(ctx);
-    drawLevel(ctx, this.level, camera);
+    drawLevel(ctx, this.level, camera, this.ticks);
     for (const e of this.entities) e.draw(ctx);
     this.player.draw(ctx);
     this.drawWorld(ctx);
