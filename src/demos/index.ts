@@ -26,8 +26,12 @@ export const catalogue: readonly Demo[] = [
   rangedWeapon, meleeAttack, hitPoints, enemyPatrol,
   // Items
   powerup, collectibles, checkpoint,
+  // Platforms and surfaces
+  movingPlatforms, oneWay,
+  // Hazards and obstacles
+  hazards,
   // World
-  parallax, movingPlatforms, oneWay, hazards, keysAndDoors,
+  parallax, keysAndDoors,
 ];
 
 export function findDemo(id: string): Demo | undefined {

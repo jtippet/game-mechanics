@@ -1,8 +1,8 @@
 import type { Action } from '../engine/input';
 import type { Scene } from '../engine/scene';
 
-export type Category = 'Movement' | 'Combat' | 'Items' | 'World';
-export const CATEGORIES: readonly Category[] = ['Movement', 'Combat', 'Items', 'World'];
+export type Category = 'Movement' | 'Combat' | 'Items' | 'Platforms and surfaces' | 'Hazards and obstacles' | 'World';
+export const CATEGORIES: readonly Category[] = ['Movement', 'Combat', 'Items', 'Platforms and surfaces', 'Hazards and obstacles', 'World'];
 
 export interface TouchButton { action: Action; label: string }
 
