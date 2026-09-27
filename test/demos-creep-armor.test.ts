@@ -53,6 +53,51 @@ describe('creeper', () => {
   });
 });
 
+describe('creeper at a ledge', () => {
+  // A short two-tile ledge (cols 5-6, row 3) well above a floor far below it
+  // (row 7). The player idles on the floor past the ledge's right edge,
+  // facing right: away from the creeper, which sits on the ledge to their
+  // left, so it stays unfrozen and walks toward them.
+  const LEDGE_ROOM = [
+    '####################',
+    '#..................#',
+    '#..................#',
+    '#....##............#',
+    '#..................#',
+    '#..................#',
+    '#..............@...#',
+    '####################',
+  ];
+  const LEDGE_SPOT_CELL = { x: 5 * 16, y: 2 * 16 };
+
+  it('waits at the edge of its ledge instead of walking off, when turnAtLedges is true', () => {
+    const s = new CreepScene(LEDGE_ROOM, [{ cell: LEDGE_SPOT_CELL, dir: 1, turnAtLedges: true, kind: 'creep' }]);
+    s.player.facing = 1;
+    const creeper = s.spawner.enemies()[0] as Creeper;
+    const y0 = creeper.body.y;
+    const ledgeRightEdge = 7 * 16;   // one past the last solid ledge column (6)
+    const input = new Input();
+    let sawWaiting = false;
+    for (let i = 0; i < 200; i++) {
+      step(s, input);                // idle: no keys held, so facing never changes
+      if (creeper.waiting) sawWaiting = true;
+    }
+    expect(creeper.body.y).toBe(y0);                              // never fell
+    expect(creeper.body.x + creeper.body.w).toBeLessThanOrEqual(ledgeRightEdge);
+    expect(sawWaiting).toBe(true);
+  });
+
+  it('falls off the same ledge when turnAtLedges is false', () => {
+    const s = new CreepScene(LEDGE_ROOM, [{ cell: LEDGE_SPOT_CELL, dir: 1, turnAtLedges: false, kind: 'creep' }]);
+    s.player.facing = 1;
+    const creeper = s.spawner.enemies()[0] as Creeper;
+    const y0 = creeper.body.y;
+    const input = new Input();
+    for (let i = 0; i < 200; i++) step(s, input);
+    expect(creeper.body.y).toBeGreaterThan(y0);
+  });
+});
+
 describe('armor', () => {
   it('a shield absorbs one hit with no knockback, then returns 120 ticks later', () => {
     const s = new ArmorScene();

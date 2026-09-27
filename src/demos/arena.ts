@@ -2,9 +2,10 @@ import { DT } from '../engine/constants';
 import { Patroller } from '../engine/entities/patroller';
 import type { Vec } from '../engine/geom';
 import { overlaps } from '../engine/geom';
-import { moveBody } from '../engine/physics';
+import { isSolidKind, moveBody } from '../engine/physics';
 import { drawActor, PALETTE } from '../engine/renderer';
 import type { BaseScene } from '../engine/scene';
+import { cellsUnder } from '../engine/tilemap';
 
 export const ARENA = [
   '########################################',
@@ -42,19 +43,46 @@ export class Seeker extends Patroller {
  */
 export class Creeper extends Patroller {
   frozen = false;
+  /** True on a tick it stands still at the edge of its ledge (turnAtLedges), as opposed to standing still because it's watched. */
+  waiting = false;
 
   override update(scene: BaseScene): void {
     const p = scene.player;
     const side: 1 | -1 = this.body.x < p.body.x ? -1 : 1;   // where the creeper is, from the player
     this.frozen = p.facing === side;                          // the player is looking at it
     if (this.frozen) {
+      this.waiting = false;
       this.body.vx = 0;
       this.body.vy = Math.min(this.body.vy + this.gravity * DT, 260);
       moveBody(scene.level, this.body);
       return;
     }
     this.dir = side === -1 ? 1 : -1;                          // walk toward the player
+    // Patroller.update re-decides this.dir at a ledge, but this class resets
+    // it right back toward the player every tick above, which would erase
+    // that turn and let it step off. Stop here instead, before moving, so
+    // there's nothing for next tick's chase to overwrite: it waits at the
+    // edge (still able to freeze) rather than turning away from the player.
+    if (this.turnAtLedges && this.atLedge(scene)) {
+      this.waiting = true;
+      this.body.vx = 0;
+      this.body.vy = Math.min(this.body.vy + this.gravity * DT, 260);
+      moveBody(scene.level, this.body);
+      return;
+    }
+    this.waiting = false;
     super.update(scene);
+  }
+
+  /** True when the ground it's standing on doesn't continue in the direction it's about to walk. Mirrors Patroller's own post-move probe, but checked before moving. */
+  private atLedge(scene: BaseScene): boolean {
+    const floor = (r: { x: number; y: number; w: number; h: number }): boolean =>
+      cellsUnder(scene.level, r).some(k => isSolidKind(k.kind) || k.kind === 'oneway');
+    const underFoot = { x: this.body.x, y: this.body.y + this.body.h, w: this.body.w, h: 1 };
+    if (!floor(underFoot)) return false;                     // already airborne: not a ledge to wait at
+    const aheadX = this.dir > 0 ? this.body.x + this.body.w : this.body.x - 1;
+    const ahead = { x: aheadX, y: this.body.y + this.body.h, w: 0.5, h: 1 };
+    return !floor(ahead);
   }
 
   override draw(ctx: CanvasRenderingContext2D): void {
