@@ -41,6 +41,15 @@ describe('portals demo', () => {
     const s = new PortalScene();
     expect(s.portals.map(p => p.twoWay)).toEqual([true, false]);
   });
+
+  it('walking right from spawn reaches pad a and teleports to pad b', () => {
+    const s = new PortalScene();
+    const input = new Input();
+    let i = 0;
+    for (; i < 150 && s.portals[0].teleports < 1; i++) step(s, input, ['right']);
+    expect(s.portals[0].teleports).toBe(1);
+    expect(Math.abs(s.player.body.x - (16 * 16 + 2))).toBeLessThanOrEqual(6);
+  });
 });
 
 describe('levers demo', () => {
@@ -48,10 +57,13 @@ describe('levers demo', () => {
     const s = new LeverScene();
     const input = new Input();
     expect(tileAt(s.level, 14, 8)).toBe('door');
-    s.player.moveTo(s.level.levers[0]);                             // stand on the first lever
-    step(s, input);
+    let i = 0;
+    for (; i < 200 && Math.abs(s.player.body.x - (9 * 16 + 2)) > 6; i++) step(s, input, ['right']);   // walk from spawn to the lever
+    step(s, input);                                                  // release and settle
+    expect(s.player.contacts.onGround).toBe(true);
     step(s, input, ['act']);
     expect(tileAt(s.level, 14, 8)).toBe('empty');
+    expect(s.levers[0].on).toBe(true);
     s.player.moveTo({ x: 14 * 16, y: 8 * 16 });                     // stand in the open doorway
     step(s, input);
     s.toggleDoor(0, false);

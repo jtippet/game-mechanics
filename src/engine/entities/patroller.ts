@@ -1,8 +1,7 @@
 import { DT, TILE } from '../constants';
 import type { Vec } from '../geom';
 import type { Body } from '../physics';
-import { moveBody } from '../physics';
-import { isSolidKind } from '../physics';
+import { isSolidKind, moveBody } from '../physics';
 import { drawActor, PALETTE } from '../renderer';
 import type { BaseScene, Entity } from '../scene';
 import { cellsUnder } from '../tilemap';

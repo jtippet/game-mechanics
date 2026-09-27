@@ -8,6 +8,7 @@ const COOLDOWN = 30;
 export class Portal implements Entity {
   teleports = 0;
   private cooldown = 0;
+  private armed = true;
 
   constructor(readonly a: Vec, readonly b: Vec, readonly twoWay: boolean, private readonly color: string) {}
 
@@ -16,8 +17,12 @@ export class Portal implements Entity {
   update(scene: BaseScene): void {
     if (this.cooldown > 0) { this.cooldown--; return; }
     const body = scene.player.body;
-    if (overlaps(body, this.pad(this.a))) this.go(scene, this.b);
-    else if (this.twoWay && overlaps(body, this.pad(this.b))) this.go(scene, this.a);
+    const onA = overlaps(body, this.pad(this.a));
+    const onB = overlaps(body, this.pad(this.b));
+    if (!onA && !onB) this.armed = true;
+    if (!this.armed) return;
+    if (onA) this.go(scene, this.b);
+    else if (this.twoWay && onB) this.go(scene, this.a);
   }
 
   private go(scene: BaseScene, to: Vec): void {
@@ -26,6 +31,7 @@ export class Portal implements Entity {
     b.y = to.y + TILE - b.h;
     this.cooldown = COOLDOWN;
     this.teleports++;
+    this.armed = false;
     scene.camera.snap(b.x + b.w / 2, b.y + b.h / 2);
   }
 

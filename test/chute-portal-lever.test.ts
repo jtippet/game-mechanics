@@ -72,6 +72,21 @@ describe('Portal', () => {
     for (let i = 0; i < 29; i++) step(s, input);
     expect(portal.teleports).toBe(1);                                  // standing on pad b during the cooldown
   });
+  it('does not re-fire on a standing player once the cooldown ends, but re-arms once the player leaves the pad', () => {
+    const s = new BaseScene(OPEN);
+    const portal = new Portal({ x: 48, y: 80 }, { x: 160, y: 80 }, true, '#fff');   // far-apart pads
+    s.entities.push(portal);
+    const input = new Input();
+    let i = 0;
+    for (; i < 100 && portal.teleports < 1; i++) step(s, input, ['right']);   // walk into pad a
+    expect(portal.teleports).toBe(1);
+    for (let j = 0; j < 100; j++) step(s, input);                      // stand still on pad b well past the cooldown
+    expect(portal.teleports).toBe(1);
+    let j = 0;
+    for (; j < 60 && s.player.body.x > 140; j++) step(s, input, ['left']);    // walk fully clear of pad b
+    for (j = 0; j < 60 && portal.teleports < 2; j++) step(s, input, ['right']);   // and back onto it
+    expect(portal.teleports).toBe(2);
+  });
 });
 
 describe('Lever', () => {
