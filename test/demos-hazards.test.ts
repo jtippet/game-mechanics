@@ -22,15 +22,16 @@ describe('landmines', () => {
 });
 
 describe('flame jets', () => {
-  it('an active jet costs a heart; an inactive one does not', () => {
+  it('an active jet costs a heart the tick it lights; a resting one never does', () => {
     const s = new FlameScene();
     const jet = s.jets[0];
     s.player.moveTo(jet.cell);
     let n = 0;
-    while (!jet.active && n++ < 300) idle(s, 1);
-    expect(s.hp.hp).toBe(3);                          // untouched while it rested
-    idle(s, 2);
-    expect(s.hp.hp).toBe(2);
+    while (!jet.active && n++ < 300) { idle(s, 1); if (!jet.active) expect(s.hp.hp).toBe(3); }
+    expect(jet.active).toBe(true);
+    expect(s.hp.hp).toBe(2);                          // hurt on the ignition tick
+    idle(s, 30);
+    expect(s.hp.hp).toBe(2);                          // invulnerability covers the rest of the burst
   });
 });
 

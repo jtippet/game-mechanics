@@ -20,20 +20,13 @@ const LEVEL = [
 
 export class FlameScene extends HpScene {
   readonly jets: FlameJet[];
-  /** Whether each jet was already active as of the previous tick: the ignition frame itself is a grace frame. */
-  private readonly hot: boolean[];
   constructor() {
     super(LEVEL, { accent: ACCENT });
     this.jets = this.level.jets.map((c, i) => new FlameJet(c, 'up', 120, 120, i * 48));
     this.entities.push(...this.jets);
-    this.hot = this.jets.map(() => false);
   }
   protected override afterUpdate(): void {
-    const dying = this.tickDying();
-    this.jets.forEach((j, i) => {
-      if (!dying && this.hot[i] && j.hits(this.hp.body)) this.damage(j.cell.x + 8);
-      this.hot[i] = j.active;
-    });
+    if (!this.tickDying()) for (const j of this.jets) if (j.hits(this.hp.body)) this.damage(j.cell.x + 8);
     this.hud = [`deaths ${this.deaths}`, 'jets rest, warn, then fire; time your run'];
   }
 }
