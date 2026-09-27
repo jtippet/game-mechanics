@@ -568,25 +568,62 @@ HUD: `p.ducking ? 'ducking: slower, no firing, half height' : 'hold ↓ to duck 
 
 All three use `ARENA` and `Respawner` with `ARENA_SPOTS`, count `hits`, and respawn the player on touch through `spawner.update() && spawner.hurtPlayer()` exactly like ranged-weapon.
 
-- [ ] **Step 1: failing tests**
+- [ ] **Step 1: failing tests** — `test/demos-shots.test.ts`:
 
 ```ts
+import { describe, expect, it } from 'vitest';
+import { ArcScene } from '../src/demos/arcing-shots';
+import { HomingScene } from '../src/demos/homing-missiles';
+import { LaserScene } from '../src/demos/lasers';
+import type { Action } from '../src/engine/input';
+import { Input } from '../src/engine/input';
+import type { BaseScene } from '../src/engine/scene';
+
+const step = (s: BaseScene, input: Input, held: Action[] = []): void => {
+  for (const a of ['left', 'right', 'up', 'down', 'jump', 'act'] as const) { if (held.includes(a)) input.press(a); else input.release(a); }
+  input.tick(); s.update(input);
+};
+const ROOM = ['####################', '#..................#', '#..................#', '#@.................#', '####################'];
+
 describe('lasers', () => {
   it('one press kills every patroller on the row up to the wall', () => {
     const s = new LaserScene(ROOM, [{ cell: { x: 96, y: 48 }, dir: -1, turnAtLedges: false }, { cell: { x: 192, y: 48 }, dir: -1, turnAtLedges: false }]);
-    step(s, input); step(s, input, ['act']);
+    const input = new Input();
+    step(s, input);
+    step(s, input, ['act']);
     expect(s.hits).toBe(2);
   });
 });
+
 describe('arcing shots', () => {
-  it('a lobbed shot falls onto a patroller below a ledge', () => { /* player on a ledge at row 2, enemy on the floor 6 cells right; act; run 120 ticks; hits 1 */ });
+  it('a lobbed shot falls onto a patroller standing where the arc lands', () => {
+    // Player on a ledge (spawn row 2, ledge cols 0-2 on row 3); enemy still on the floor (row 6, y 96).
+    const ROWS = ['####################', '#..................#', '#@.................#', '###................#', '#..................#', '#..................#', '####################'];
+    const s = new ArcScene(ROWS, [{ cell: { x: 168, y: 80 }, dir: 1, turnAtLedges: false }]);
+    s.spawner.enemies()[0].speed = 0;                 // stands at x 170..182
+    const input = new Input();
+    step(s, input);
+    step(s, input, ['act']);                           // from x 30, y 40: vx 200, vy0 -150, g 600 lands near x 182
+    for (let i = 0; i < 120; i++) step(s, input);
+    expect(s.hits).toBe(1);
+  });
 });
+
 describe('homing missiles', () => {
-  it('a missile turns to hit a patroller above and behind', () => { /* enemy on a ledge behind the player; act facing away; 200 ticks; hits 1 */ });
+  it('a missile fired away from an enemy behind and above still turns and hits it', () => {
+    const ROWS = ['####################', '#..................#', '#.###..............#', '#..................#', '#........@.........#', '####################'];
+    const s = new HomingScene(ROWS, [{ cell: { x: 32, y: 16 }, dir: 1, turnAtLedges: true }]);
+    s.spawner.enemies()[0].speed = 0;
+    const input = new Input();
+    step(s, input, ['right']);                         // face right, away from the enemy
+    step(s, input, ['act']);
+    for (let i = 0; i < 200; i++) step(s, input);
+    expect(s.hits).toBe(1);
+  });
 });
 ```
 
-Write these out fully with `ROOM` fixtures whose rows are equal length; each scene constructor is `(rows = ARENA, spots = ARENA_SPOTS)`.
+`spawner` must be a public readonly field on all three scenes so the tests can still the enemies.
 
 - [ ] **Step 2: lasers.ts** — `act` with a 20-tick cooldown: `const l = new Laser(x, y, facing, level, ACCENT); entities.push(l); for (e of spawner.enemies()) if (l.hits(e.body)) { spawner.kill(e); hits++ }`. Muzzle: `x = facing > 0 ? b.x + b.w : b.x`, `y = b.y + 6`. Accent `'#ff4d6d'`; `touch: [{ action: 'act', label: 'FIRE' }]`.
 - [ ] **Step 3: arcing-shots.ts** — `act` (15-tick cooldown): `new Projectile(x, b.y + 4, facing, 200, ACCENT, { gravity: 600, vy0: -150 })`; collisions as in ranged-weapon (`overlaps(shot.body, enemy.body)` → both die). `touch: [{ action: 'act', label: 'LOB' }]`.
@@ -602,7 +639,65 @@ Write these out fully with `ROOM` fixtures whose rows are equal length; each sce
 - Modify: `src/demos/index.ts` (Combat, after `homingMissiles`)
 - Test: `test/demos-blasts.test.ts`
 
-- [ ] **Step 1: failing tests** — (a) explosions: throw with an enemy 3 cells ahead on the floor; within 60 ticks `hits === 1`; throw at point-blank into the wall beside the player; `hp` drops by exactly 1 over the next 30 ticks (the ring lasts 20 ticks; invulnerability covers it). (b) grenades: a thrown grenade bounces (its `vy` flips sign once), then rests (`vx === 0`), and explodes at `fuse` 180 ticks after resting; an enemy standing next to it dies then, not before.
+- [ ] **Step 1: failing tests** — `test/demos-blasts.test.ts`:
+
+```ts
+import { describe, expect, it } from 'vitest';
+import { ExplosionScene } from '../src/demos/explosions';
+import { Grenade, GrenadeScene } from '../src/demos/grenades';
+import type { Action } from '../src/engine/input';
+import { Input } from '../src/engine/input';
+import type { BaseScene } from '../src/engine/scene';
+
+const step = (s: BaseScene, input: Input, held: Action[] = []): void => {
+  for (const a of ['left', 'right', 'up', 'down', 'jump', 'act'] as const) { if (held.includes(a)) input.press(a); else input.release(a); }
+  input.tick(); s.update(input);
+};
+const ROOM = ['####################', '#..................#', '#..................#', '#@.................#', '####################'];
+
+describe('explosions', () => {
+  it('a thrown bomb kills an enemy near its landing spot and spares the far-away thrower', () => {
+    const s = new ExplosionScene(ROOM, [{ cell: { x: 112, y: 48 }, dir: 1, turnAtLedges: false }]);
+    s.spawner.enemies()[0].speed = 0;                 // stands at x 114..126; the bomb lands near x 103
+    const input = new Input();
+    step(s, input);
+    step(s, input, ['act']);
+    for (let i = 0; i < 90; i++) step(s, input);
+    expect(s.hits).toBe(1);
+    expect(s.hp.hp).toBe(3);
+  });
+  it('a point-blank bomb costs the thrower exactly one heart', () => {
+    const s = new ExplosionScene(ROOM, []);
+    const input = new Input();
+    step(s, input, ['left']);                          // face the wall at x 16
+    step(s, input, ['act']);                           // the bomb spawns inside the wall and detonates at once
+    for (let i = 0; i < 30; i++) step(s, input);
+    expect(s.hp.hp).toBe(2);
+  });
+});
+
+describe('grenades', () => {
+  it('bounces once, rests, then blows after the fuse, hurting whoever stands by it', () => {
+    const s = new GrenadeScene(ROOM, []);
+    const input = new Input();
+    step(s, input);
+    step(s, input, ['act']);
+    const g = s.entities.find((e): e is Grenade => e instanceof Grenade)!;
+    let bounced = false;
+    for (let i = 0; i < 200 && !g.resting; i++) { const before = g.body.vy; step(s, input); if (before > 0 && g.body.vy < 0) bounced = true; }
+    expect(bounced).toBe(true);
+    expect(g.resting).toBe(true);
+    s.player.moveTo({ x: g.body.x - 8, y: 32 });        // stand next to it
+    for (let i = 0; i < 170; i++) step(s, input);
+    expect(s.hp.hp).toBe(3);                            // fuse still burning
+    for (let i = 0; i < 20; i++) step(s, input);
+    expect(g.dead).toBe(true);
+    expect(s.hp.hp).toBe(2);
+  });
+});
+```
+
+`Grenade` is exported from the demo file; both scenes expose `spawner` and `hits`.
 
 - [ ] **Step 2: shared helper in `src/demos/blast.ts`**
 
