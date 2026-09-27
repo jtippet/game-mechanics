@@ -133,10 +133,13 @@ export function drawFlag(ctx: CanvasRenderingContext2D, x: number, y: number, ra
   else ctx.fillRect(x + 7, y + 9, 4, 3);
 }
 
+/** Silkscreen at its native 8 px lands every glyph pixel on the logical grid; the shell waits for it to load before the first frame. */
+export const HUD_FONT = '8px Silkscreen, monospace';
+
 export function drawText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string = PALETTE.text): void {
   // FONT-PROBE: font is normally fixed at '8px monospace'; this reads a window global so
   // the font-probe branch can switch fonts from browser_evaluate without a rebuild. Not for merge.
-  ctx.font = (typeof window !== 'undefined' && (window as any).__hudFont) || '8px monospace';
+  ctx.font = HUD_FONT;
   ctx.textBaseline = 'top';
   ctx.fillStyle = color;
   ctx.fillText(text, x, y);

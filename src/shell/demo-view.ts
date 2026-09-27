@@ -2,7 +2,7 @@ import { TOUCH_BASE, type Demo } from '../demos/demo';
 import { VIEW_H, VIEW_W } from '../engine/constants';
 import { Input } from '../engine/input';
 import { Loop } from '../engine/loop';
-import { setupCanvas } from '../engine/renderer';
+import { HUD_FONT, setupCanvas } from '../engine/renderer';
 import type { Scene } from '../engine/scene';
 import { scaleFor } from './scale';
 import { mountTouchBar } from './touch';
@@ -71,11 +71,15 @@ export function mountDemo(root: HTMLElement, demo: Demo): () => void {
   window.addEventListener('keydown', onKey);
   window.addEventListener('resize', fit);
   resetButton.addEventListener('click', onReset);
+  let stopped = false;
   fit();
   reset();
-  loop.start();
+  // Draw nothing until the pixel font is in, or the first frames would fall back to an antialiased face.
+  const fontReady = typeof document !== 'undefined' && document.fonts ? document.fonts.load(HUD_FONT).catch(() => undefined) : Promise.resolve(undefined);
+  void fontReady.then(() => { if (!stopped) loop.start(); });
 
   return () => {
+    stopped = true;
     loop.stop();
     detachKeys();
     unmountTouch();
