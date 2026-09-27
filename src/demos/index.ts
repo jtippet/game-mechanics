@@ -10,6 +10,9 @@ import { rangedWeapon } from './ranged-weapon';
 import { meleeAttack } from './melee-attack';
 import { hitPoints } from './hit-points';
 import { hazards } from './hazards';
+import { landmines } from './landmines';
+import { flameJets } from './flame-jets';
+import { rollingRocks } from './rolling-rocks';
 import { checkpoint } from './checkpoint';
 import { collectibles } from './collectibles';
 import { powerup } from './powerup';
@@ -36,7 +39,7 @@ export const catalogue: readonly Demo[] = [
   // Platforms and surfaces
   movingPlatforms, oneWay, crumblingPlatforms, intervalPlatforms, iceAndSand, conveyorBelts, slides, portals, levers,
   // Hazards and obstacles
-  hazards,
+  hazards, landmines, flameJets, rollingRocks,
   // World
   parallax, keysAndDoors,
 ];
