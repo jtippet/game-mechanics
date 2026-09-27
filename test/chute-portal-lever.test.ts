@@ -29,6 +29,25 @@ describe('Chute', () => {
     expect(s.player.gravity).toBe(600);
     expect(s.player.body.x).toBeGreaterThan(200);                      // arrived at the last waypoint and was released
   });
+
+  it('lets go after a moment if a wall blocks the path', () => {
+    const WALLED = ['####################', '#..................#', '#..........#.......#', '#..........#.......#', '#..........#.......#', '#@.........#.......#', '####################'];
+    const s = new BaseScene(WALLED);
+    const chute = new Chute([{ x: 48, y: 80 }, { x: 240, y: 80 }], '#fff', 120);   // the second waypoint is behind the wall at col 11
+    s.entities.push(chute);
+    const input = new Input();
+    for (let i = 0; i < 40; i++) step(s, input, ['right']);
+    expect(chute.active).toBe(true);
+    for (let i = 0; i < 120; i++) step(s, input);
+    expect(chute.active).toBe(false);
+    expect(s.player.noJump).toBe(false);
+    expect(s.player.gravity).toBe(600);
+    expect(s.player.body.x).toBeLessThan(176);                                    // still on the near side of the wall
+  });
+
+  it('refuses a chute with fewer than two waypoints', () => {
+    expect(() => new Chute([{ x: 0, y: 0 }], '#fff')).toThrow('at least two');
+  });
 });
 
 describe('Portal', () => {
