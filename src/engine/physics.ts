@@ -15,7 +15,10 @@ export interface MoveOptions { dropThrough?: boolean }
 const MAX_STEP = 8;
 const EPS = 0.01;
 
-const blocks = (k: TileKind): boolean => k === 'solid' || k === 'door' || k === 'climb';
+export function isSolidKind(k: TileKind): boolean {
+  return k === 'solid' || k === 'door' || k === 'climb' || k === 'ice' || k === 'sand' || k === 'beltR' || k === 'beltL';
+}
+const blocks = isSolidKind;
 
 /**
  * Move a body by vx*DT, vy*DT through the level, axis by axis, in sub-steps.

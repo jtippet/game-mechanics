@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { CheckpointScene } from '../src/demos/checkpoint';
 import { HazardScene } from '../src/demos/hazards';
-import { HpScene, type HpPlayer, MAX_HP } from '../src/demos/hit-points';
+import { HitPointsScene } from '../src/demos/hit-points';
+import type { HpPlayer } from '../src/engine/entities/hp-player';
 import type { Action } from '../src/engine/input';
 import { Input } from '../src/engine/input';
 import type { BaseScene } from '../src/engine/scene';
@@ -30,21 +31,21 @@ function step(scene: BaseScene, input: Input, held: Action[] = []): void {
 
 describe('hit points', () => {
   it('a spike costs one hp, knocks back, and grants invulnerability', () => {
-    const s = new HpScene(SPIKES, []);
+    const s = new HitPointsScene(SPIKES, []);
     const p = s.player as HpPlayer;
     const input = new Input();
     let ticks = 0;
-    while (p.hp === MAX_HP && ticks++ < 200) step(s, input, ['right']);
-    expect(p.hp).toBe(MAX_HP - 1);
+    while (p.hp === p.maxHp && ticks++ < 200) step(s, input, ['right']);
+    expect(p.hp).toBe(p.maxHp - 1);
     expect(p.invuln).toBeGreaterThan(0);
     expect(p.body.vy).toBeLessThan(0);
     expect(p.body.vx).toBeLessThan(0);
     for (let i = 0; i < 20; i++) step(s, input, ['right']);
-    expect(p.hp).toBe(MAX_HP - 1);
+    expect(p.hp).toBe(p.maxHp - 1);
   });
 
   it('at zero hp the player respawns with full hp', () => {
-    const s = new HpScene(SPIKES, []);
+    const s = new HitPointsScene(SPIKES, []);
     const p = s.player as HpPlayer;
     const input = new Input();
     let ticks = 0;
@@ -52,7 +53,7 @@ describe('hit points', () => {
     expect(s.deaths).toBe(1);
     expect(p.hp).toBe(0);                              // dying window has just opened
     for (let i = 0; i < 60; i++) step(s, input);       // let it finish (DEATH_TICKS is 40)
-    expect(p.hp).toBe(MAX_HP);
+    expect(p.hp).toBe(p.maxHp);
     expect(p.invuln).toBe(0);
     expect(p.body.x).toBe(18);                         // back at spawn
   });
@@ -61,7 +62,7 @@ describe('hit points', () => {
 describe('hit points jump', () => {
   it('a full jump clears the four-tile enemy platforms', () => {
     const TALL = ['############', ...Array.from({ length: 7 }, () => '#..........#'), '#@.........#', '############'];
-    const s = new HpScene(TALL, []);
+    const s = new HitPointsScene(TALL, []);
     const p = s.player as HpPlayer;
     const input = new Input();
     step(s, input);

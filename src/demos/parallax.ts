@@ -33,7 +33,7 @@ class ParallaxScene extends BaseScene {
   }
 
   protected override afterUpdate(): void {
-    this.hud = [`camera x ${Math.round(this.camera.x)}`, 'far layer 0.35x, near 0.6x, ground 1x; jump to see it move up too'];
+    this.hud = [`camera x ${Math.round(this.camera.x)}`, 'far 0.35x, near 0.6x, ground 1x; jump to see it lift'];
   }
 }
 

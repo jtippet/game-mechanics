@@ -42,7 +42,7 @@ export class HazardScene extends BaseScene {
 export const hazards: Demo = {
   id: 'hazards',
   title: 'Hazards',
-  category: 'World',
+  category: 'Hazards and obstacles',
   blurb: 'Spikes. Touch the pointy half and you die and restart. Clearing the tips is enough; you do not need to clear the whole cell.',
   controls: BASE_CONTROLS,
   create: () => new HazardScene(LEVEL, { accent: ACCENT }),

@@ -48,7 +48,7 @@ class OneWayScene extends BaseScene {
 export const oneWay: Demo = {
   id: 'one-way',
   title: 'One-way platforms',
-  category: 'World',
+  category: 'Platforms and surfaces',
   blurb: 'Planks you can jump up through and stand on. Hold down and jump to drop through.',
   controls: [...BASE_CONTROLS, '↓ + jump: drop through'],
   touch: [{ action: 'down', label: 'DROP' }],

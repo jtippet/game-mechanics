@@ -25,6 +25,8 @@ export class Player implements Entity {
   /** Ticks during which horizontal input is ignored (wall kicks, knockback). */
   controlLock = 0;
   color: string = PALETTE.player;
+  /** When true, control() ignores jump presses (chutes use it). */
+  noJump = false;
 
   runSpeed = 90;
   accel = 900;
@@ -64,7 +66,7 @@ export class Player implements Entity {
     } else if (!locked) {
       this.body.vx = approach(this.body.vx, 0, (onGround ? this.friction : this.airAccel * 0.5) * DT);
     }
-    if (input.pressed('jump') && this.canJump()) this.jump();
+    if (input.pressed('jump') && !this.noJump && this.canJump()) this.jump();
   }
 
   protected canJump(): boolean {

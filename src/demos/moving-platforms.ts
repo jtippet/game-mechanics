@@ -37,7 +37,7 @@ class MovingPlatformScene extends BaseScene {
 export const movingPlatforms: Demo = {
   id: 'moving-platforms',
   title: 'Moving platforms',
-  category: 'World',
+  category: 'Platforms and surfaces',
   blurb: 'Platforms that glide sideways and diagonally, carrying whoever stands on them.',
   controls: BASE_CONTROLS,
   create: () => new MovingPlatformScene(LEVEL),

@@ -31,6 +31,19 @@ describe('catalogue', () => {
     }
   });
 
+  it('has the six groups in order and each existing demo in its spec group', () => {
+    expect(CATEGORIES).toEqual(['Movement', 'Combat', 'Items', 'Platforms and surfaces', 'Hazards and obstacles', 'World']);
+    const cat = (id: string) => catalogue.find(d => d.id === id)?.category;
+    expect(cat('moving-platforms')).toBe('Platforms and surfaces');
+    expect(cat('one-way')).toBe('Platforms and surfaces');
+    expect(cat('hazards')).toBe('Hazards and obstacles');
+    expect(cat('parallax')).toBe('World');
+    expect(cat('keys-and-doors')).toBe('World');
+    // menu order follows group order
+    const groupIndex = catalogue.map(d => CATEGORIES.indexOf(d.category));
+    expect([...groupIndex].sort((a, b) => a - b)).toEqual(groupIndex);
+  });
+
   for (const demo of catalogue) {
     it(`${demo.id} survives 600 scripted ticks and draws`, () => {
       const scene = demo.create();
