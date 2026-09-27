@@ -2,6 +2,9 @@ import type { Demo } from './demo';
 import { runAndJump } from './run-and-jump';
 import { doubleJump } from './double-jump';
 import { variableJump } from './variable-jump';
+import { ladders } from './ladders';
+import { gliding } from './gliding';
+import { flying } from './flying';
 import { coyoteBuffer } from './coyote-buffer';
 import { wallClimb } from './wall-climb';
 import { dash } from './dash';
@@ -31,7 +34,7 @@ import { levers } from './levers';
 /** Menu order. Adding a demo is one file and one line here. */
 export const catalogue: readonly Demo[] = [
   // Movement
-  runAndJump, doubleJump, wallClimb, dash, coyoteBuffer, variableJump,
+  runAndJump, doubleJump, wallClimb, dash, coyoteBuffer, variableJump, ladders, gliding, flying,
   // Combat
   rangedWeapon, meleeAttack, hitPoints, enemyPatrol,
   // Items

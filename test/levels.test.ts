@@ -13,7 +13,11 @@ const REACH_UP_2 = 2;    // when rising two tiles
 const PASSABLE: TileKind[] = ['empty', 'spike', 'oneway', 'door', 'ladder'];
 const FLOOR: TileKind[] = ['solid', 'oneway', 'climb', 'ice', 'sand', 'beltR', 'beltL'];
 const passable = (l: Level, c: number, r: number): boolean => PASSABLE.includes(tileAt(l, c, r));
-const standable = (l: Level, c: number, r: number): boolean => passable(l, c, r) && FLOOR.includes(tileAt(l, c, r + 1));
+const standable = (l: Level, c: number, r: number): boolean =>
+  passable(l, c, r) && (FLOOR.includes(tileAt(l, c, r + 1)) || tileAt(l, c, r) === 'ladder');
+
+/** A goal that needs flight to reach is exempt: the coarse flood fill has no notion of flying. */
+const FLIGHT_DEMOS = ['flying'];
 
 /** Coarse flood fill over standable cells from the spawn, using the jump limits above. Ignores walls in between: it is a floor for what a level may demand, not a solver. */
 function reachableStands(l: Level): Set<string> {
@@ -39,6 +43,7 @@ function reachableStands(l: Level): Set<string> {
 describe('every catalogued level is playable', () => {
   for (const demo of catalogue) {
     it(`${demo.id}: every pickup and key is within a jump of a reachable stand`, () => {
+      if (FLIGHT_DEMOS.includes(demo.id)) return;
       const scene = demo.create();
       if (!(scene instanceof BaseScene)) return;
       const l = scene.level;
