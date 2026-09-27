@@ -60,4 +60,19 @@ describe('ducking', () => {
     for (let i = 0; i < 300; i++) step(s, input, ['right']);
     expect(s.hp.hp).toBeLessThan(3);
   });
+  it('dying while ducked stands the player back up at full height on respawn', () => {
+    const s = new DuckScene();
+    const p = s.hp as DuckPlayer;
+    const input = new Input();
+    step(s, input);
+    step(s, input, ['down']);
+    expect(p.ducking).toBe(true);
+    s.hp.hp = 1;
+    s.hurt(0);                                          // the public entry point, not damage() directly
+    let guard = 0;
+    while (s.dying > 0) { step(s, input); guard++; if (guard > 100) throw new Error('never respawned'); }
+    expect(p.ducking).toBe(false);
+    expect(p.body.h).toBe(14);
+    expect(p.body.y + p.body.h).toBe(s.level.spawn.y + 16);   // standing on the spawn floor
+  });
 });

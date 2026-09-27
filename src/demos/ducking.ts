@@ -71,6 +71,11 @@ export class DuckScene extends HpScene {
     const p = this.hp as DuckPlayer;
     p.ducking = false;
     p.body.h = STAND_H;
+    // tickDying() already called respawn() (BaseScene's own moveTo) before this hook ran, but
+    // that one positioned the body at whatever height it had at the moment of death — an 8-px
+    // ducked body, if that's what died. moveTo again now, after resetting h to the full 14 px
+    // above: moveTo places the feet on the floor from body.h, so with the old, shorter h still
+    // in effect the first call already sank the (soon-to-be-14-px) body 6 px into the ground.
     p.moveTo(this.level.spawn);
   }
 
