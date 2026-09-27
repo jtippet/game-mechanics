@@ -120,4 +120,20 @@ describe('MovingPlatform', () => {
     expect(s.player.body.vy).toBeLessThan(0);
     expect(plat.riding).toBe(false);
   });
+
+  it('carries a player up and down on a vertical glide, faster than gravity would pull', () => {
+    const s = new BaseScene(OPEN_ROWS);
+    // top y 80 → 40 → 80 over 20 ticks each way: 2 px per tick, faster than the first ticks of gravity
+    const plat = new MovingPlatform({ x: 40, y: 80 }, { x: 40, y: 40 }, 48, 20);
+    s.entities.push(plat);
+    s.player.moveTo({ x: 48, y: 64 });
+    idle(s, 10);                                   // platform rising: top at 60
+    expect(plat.riding).toBe(true);
+    expect(s.player.body.y).toBe(plat.rect.y - s.player.body.h);
+    idle(s, 20);                                   // past the top and descending: top back at 60
+    expect(plat.riding).toBe(true);
+    expect(s.player.body.y).toBe(plat.rect.y - s.player.body.h);
+    expect(s.player.contacts.onGround).toBe(true);
+    expect(s.player.body.vy).toBe(0);
+  });
 });
