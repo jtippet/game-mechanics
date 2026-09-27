@@ -11,6 +11,9 @@ import { meleeAttack } from './melee-attack';
 import { hitPoints } from './hit-points';
 import { hazards } from './hazards';
 import { checkpoint } from './checkpoint';
+import { collectibles } from './collectibles';
+import { powerup } from './powerup';
+import { keysAndDoors } from './keys-and-doors';
 
 /** Menu order. Adding a demo is one file and one line here. */
 export const catalogue: readonly Demo[] = [
@@ -26,6 +29,9 @@ export const catalogue: readonly Demo[] = [
   hitPoints,
   hazards,
   checkpoint,
+  collectibles,
+  powerup,
+  keysAndDoors,
 ];
 
 export function findDemo(id: string): Demo | undefined {
