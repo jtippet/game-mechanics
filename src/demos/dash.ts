@@ -101,5 +101,6 @@ export const dash: Demo = {
   category: 'Movement',
   blurb: 'A short burst in the facing direction that ignores gravity, with a cooldown. The gaps are too wide to jump.',
   controls: [...BASE_CONTROLS, 'X: dash'],
+  touch: [{ action: 'act', label: 'DASH' }],
   create: () => new DashScene(LEVEL, { accent: ACCENT, player: spawn => new DashPlayer(spawn) }),
 };

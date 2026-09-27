@@ -1,4 +1,4 @@
-import type { Demo } from '../demos/demo';
+import { TOUCH_BASE, type Demo } from '../demos/demo';
 import { VIEW_H, VIEW_W } from '../engine/constants';
 import { Input } from '../engine/input';
 import { Loop } from '../engine/loop';
@@ -22,8 +22,7 @@ export function mountDemo(root: HTMLElement, demo: Demo): () => void {
       <pre class="overlay" hidden></pre>
     </div>
     <p class="blurb">${esc(demo.blurb)}</p>
-    <ul class="hints">${demo.controls.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
-    <div class="touch-slot"></div>`;
+    <ul class="hints">${demo.controls.map(c => `<li>${esc(c)}</li>`).join('')}</ul>`;
 
   const canvas = root.querySelector('canvas') as HTMLCanvasElement;
   const stage = root.querySelector('.stage') as HTMLElement;
@@ -32,7 +31,8 @@ export function mountDemo(root: HTMLElement, demo: Demo): () => void {
   const ctx = setupCanvas(canvas);
   const input = new Input();
   const detachKeys = input.attachKeyboard(window);
-  const unmountTouch = mountTouchBar(root.querySelector('.touch-slot') as HTMLElement, input);
+  const touchButtons = [...TOUCH_BASE, ...(demo.touch ?? [])];
+  const unmountTouch = mountTouchBar(stage, input, touchButtons);
 
   let scene: Scene | null = null;
   let crashed = false;
@@ -63,7 +63,8 @@ export function mountDemo(root: HTMLElement, demo: Demo): () => void {
   const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape') location.hash = '#/'; };
   const onReset = (): void => { reset(); resetButton.blur(); };
   const fit = (): void => {
-    const k = scaleFor(stage.clientWidth, window.innerHeight - stage.getBoundingClientRect().top - 140);
+    const availH = window.innerHeight - stage.getBoundingClientRect().top - 24;
+    const k = scaleFor(stage.clientWidth, availH);
     canvas.style.width = `${VIEW_W * k}px`;
     canvas.style.height = `${VIEW_H * k}px`;
   };

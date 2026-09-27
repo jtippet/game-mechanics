@@ -59,5 +59,6 @@ export const meleeAttack: Demo = {
   category: 'Combat',
   blurb: 'A short swing in front of you: a hit box that exists for a few frames, then a cooldown.',
   controls: [...BASE_CONTROLS, 'X: swing'],
+  touch: [{ action: 'act', label: 'SWING' }],
   create: () => new MeleeScene(ARENA),
 };
