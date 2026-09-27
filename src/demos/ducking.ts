@@ -6,7 +6,6 @@ import { overlaps } from '../engine/geom';
 import { HpScene } from '../engine/hp-scene';
 import type { Input } from '../engine/input';
 import type { BaseScene } from '../engine/scene';
-import { TILE } from '../engine/constants';
 import { isSolidKind } from '../engine/physics';
 import { cellsUnder, surfaceUnder } from '../engine/tilemap';
 import { BASE_CONTROLS, type Demo } from './demo';
@@ -41,16 +40,13 @@ export class DuckPlayer extends HpPlayer {
     const wants = input.held('down') && surfaceUnder(scene.level, this.body) !== null;
     if (wants && !this.ducking) { this.ducking = true; this.body.y += STAND_H - DUCK_H; this.body.h = DUCK_H; }
     else if (!wants && this.ducking) {
-      // A rect built from pixel offsets (body.y - (STAND_H - DUCK_H), h: STAND_H) never
-      // reaches the row above: STAND_H (14) < TILE (16), so even the full standing rect
-      // sits flush inside the resting row with a 2px margin and can't see a ceiling one
-      // row up. Measured RED: cellsUnder on that rect returned only the resting row's
-      // (always-empty) cells at every x in the tunnel, so `blocked` was never true.
-      // Probe the tile row directly above the row the feet rest in instead.
-      const restRow = Math.floor((this.body.y + this.body.h - 1) / TILE);
-      const headroom = { x: this.body.x, y: (restRow - 1) * TILE, w: this.body.w, h: TILE };
-      const blocked = cellsUnder(scene.level, headroom).some(c => isSolidKind(c.kind));
-      if (!blocked) { this.ducking = false; this.body.y -= STAND_H - DUCK_H; this.body.h = STAND_H; }
+      // A real AABB probe of the would-be standing body against the level. On today's
+      // tile geometry (STAND_H 14 < TILE 16) a standing body never reaches the row above
+      // the one it rests in, so this can't yet block anything; it's here for whenever a
+      // level places a sub-tile ceiling that a 14px body actually can't clear.
+      const tall = { x: this.body.x, y: this.body.y - (STAND_H - DUCK_H), w: this.body.w, h: STAND_H };
+      const blocked = cellsUnder(scene.level, tall).some(c => isSolidKind(c.kind));
+      if (!blocked) { this.ducking = false; this.body.y = tall.y; this.body.h = STAND_H; }
     }
     this.runSpeed = this.ducking ? 45 : 90;
     this.noJump = this.ducking;

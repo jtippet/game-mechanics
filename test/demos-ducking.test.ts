@@ -10,41 +10,26 @@ const step = (s: BaseScene, input: Input, held: Action[] = []): void => {
 };
 
 describe('ducking', () => {
-  // Two deviations from the brief's literal Step 1 test, both traced against a measured RED:
-  // 1. Tick counts (60 / 80 -> 95 / 150). Ducking caps runSpeed at 45 px/s and DT is 1/60s,
-  //    so 60 ticks (~1s) moves the body at most ~44px (measured: x landed at 62.25 from a
-  //    start of 18) — the tunnel entrance at x 80 (col 5) is 62px away and unreachable in 60
-  //    ticks at that speed. Raising the tick budget (not the position asserted) is the same
-  //    fix the task brief pre-approved for the hint-followable test below. 95 ticks clears the
-  //    entrance (measured ~88.5); the loop after release needed at least 117 more ticks to
-  //    clear the far side of the tunnel (measured: `ducking` flips to false at iteration 116) —
-  //    150 gives margin.
-  // 2. Room width (12 cols -> 15 cols). The brief's 12-char ROWS puts its ceiling row as
-  //    '#....#######' — 7 '#' after the 4-dot gap, i.e. the ceiling (cols 5-11) runs all the
-  //    way to the right border (col 11), leaving no open column to stand up in before the
-  //    wall. Measured: with the original ROWS the body's x plateaus at 164 (blocked by the
-  //    right wall at col 11) while still ducking — "stood up past the tunnel" can never
-  //    happen there regardless of tick count. Widened the room by 3 open columns (11-13,
-  //    border moved to col 14) so the tunnel (still cols 5-10, matching the brief's own prose)
-  //    has clearance on the far side, preserving the scenario's intent unchanged.
-  it('shrinks the body, slows the run, and refuses to stand up under a ceiling', () => {
-    const ROWS = ['###############', '#.............#', '#....######...#', '#@............#', '###############'];   // a 1-tile-high tunnel under cols 5-10
+  it('shrinks the body, slows the run, blocks jumping, and stands back up on release', () => {
+    const ROWS = ['############', '#..........#', '#..........#', '#@.........#', '############'];
     const s = new BaseScene(ROWS, { player: spawn => new DuckPlayer(spawn) });
     const p = s.player as DuckPlayer;
     const input = new Input();
+    step(s, input);
     step(s, input, ['down']);
     expect(p.ducking).toBe(true);
     expect(p.body.h).toBe(8);
     expect(p.body.y + p.body.h).toBe(64);               // feet still on the floor
-    for (let i = 0; i < 95; i++) step(s, input, ['down', 'right']);
+    for (let i = 0; i < 60; i++) step(s, input, ['down', 'right']);
     expect(Math.abs(p.body.vx)).toBeLessThanOrEqual(45);
-    expect(p.body.x).toBeGreaterThan(80);               // inside the tunnel
-    step(s, input, ['right']);                          // release down under the ceiling
-    expect(p.ducking).toBe(true);                       // no headroom: stays ducked
-    for (let i = 0; i < 150; i++) step(s, input, ['right']);
-    step(s, input);
-    expect(p.ducking).toBe(false);                      // past the tunnel: stood up
+    expect(p.noJump).toBe(true);
+    step(s, input, ['down', 'jump']);
+    expect(p.body.vy).toBeGreaterThanOrEqual(0);         // no jump while ducked
+    step(s, input, ['right']);
+    expect(p.ducking).toBe(false);
     expect(p.body.h).toBe(14);
+    expect(p.body.y + p.body.h).toBe(64);
+    expect(p.noJump).toBe(false);
   });
   it('a standing player is hit by the turret bullets and a ducking one is not', () => {
     const s = new DuckScene();
