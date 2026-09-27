@@ -162,10 +162,16 @@ export function drawBackdrop(ctx: CanvasRenderingContext2D, camera: Camera, para
   const o = camera.offset(parallax);
   const first = Math.floor(o.x / 40) - 1;
   const last = Math.floor((o.x + camera.viewW) / 40) + 1;
+  // Vertical parallax: the skyline sits on the viewport bottom when the camera
+  // rests at the bottom of its range, and shifts by `parallax` times however
+  // far the camera has risen from there (a jump lifts the camera, the far
+  // layer barely moves, the near layer moves more).
+  const rest = Math.max(0, camera.boundsH - camera.viewH);
+  const lift = (rest - camera.y) * parallax;
   for (let i = first; i <= last; i++) {
     const h = 30 + mod(i * 7919 + seed * 104729, 71);
     const w = 24 + mod(i * 31 + seed * 17, 14);
-    ctx.fillRect(i * 40, VIEW_H - h + o.y, w, h);
+    ctx.fillRect(i * 40, VIEW_H - h + o.y + lift, w, h);
   }
   ctx.restore();
 }

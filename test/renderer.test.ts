@@ -33,6 +33,30 @@ describe('renderer', () => {
     expect(ctx.calls).toContain('translate');
   });
 
+  it('backdrop layers shift vertically by the parallax factor when the camera rises', () => {
+    const ys = (cam: Camera): number[] => {
+      const ctx = stubContext();
+      const out: number[] = [];
+      (ctx as unknown as { fillRect: (x: number, y: number, w: number, h: number) => void }).fillRect = (_x, y) => { out.push(y); };
+      drawBackdrop(ctx, cam, 0.5, PALETTE.backdropFar, 1);
+      return out;
+    };
+    const resting = new Camera(320, 180, 2000, 260);
+    resting.snap(160, 1000);                       // clamped to the bottom: y = 80
+    const risen = new Camera(320, 180, 2000, 260);
+    risen.snap(160, 1000);
+    risen.y = 40;                                  // camera lifted 40 px
+    const a = ys(resting), b = ys(risen);
+    expect(a.length).toBe(b.length);
+    // On screen (world y minus the layer's own offset) the skyline sits 0.5 * 40 = 20 px lower
+    // once the camera has risen 40 px: it moves half as far as the ground does.
+    for (let i = 0; i < a.length; i++) {
+      const screenA = a[i] - resting.offset(0.5).y;
+      const screenB = b[i] - risen.offset(0.5).y;
+      expect(screenB - screenA).toBeCloseTo(20, 6);
+    }
+  });
+
   it('backdrop block heights are always positive', () => {
     const ctx = stubContext();
     const heights: number[] = [];

@@ -5,8 +5,14 @@ import { BASE_CONTROLS, type Demo } from './demo';
 
 const ACCENT = '#1c2440';
 
+// Four extra rows of sky so the camera has room to rise on a jump and the
+// layers can show vertical parallax too.
 const LEVEL = [
   '################################################################################',
+  '#..............................................................................#',
+  '#..............................................................................#',
+  '#..............................................................................#',
+  '#..............................................................................#',
   '#..............................................................................#',
   '#..............................................................................#',
   '#..............................................................................#',
@@ -22,12 +28,12 @@ const LEVEL = [
 
 class ParallaxScene extends BaseScene {
   protected override drawBackground(ctx: CanvasRenderingContext2D, camera: Camera): void {
-    drawBackdrop(ctx, camera, 0.3, PALETTE.backdropFar, 1);
+    drawBackdrop(ctx, camera, 0.35, PALETTE.backdropFar, 1);
     drawBackdrop(ctx, camera, 0.6, PALETTE.backdropNear, 2);
   }
 
   protected override afterUpdate(): void {
-    this.hud = [`camera x ${Math.round(this.camera.x)}`, 'far layer scrolls at 0.3x, near at 0.6x, ground at 1x'];
+    this.hud = [`camera x ${Math.round(this.camera.x)}`, 'far layer 0.35x, near 0.6x, ground 1x; jump to see it move up too'];
   }
 }
 
