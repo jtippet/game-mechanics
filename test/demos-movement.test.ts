@@ -71,6 +71,20 @@ describe('variable jump height', () => {
     expect(peak(2)).toBeGreaterThan(4);
     expect(peak(2)).toBeLessThan(peak(30) - 8);
   });
+
+  it('a held jump reaches the top mark of the ruler (4 tiles)', () => {
+    const TALL = ['############', ...Array.from({ length: 7 }, () => '#..........#'), '#@.........#', '############'];
+    const s = new BaseScene(TALL, { player: spawn => new VariableJumpPlayer(spawn) });
+    const p = s.player as VariableJumpPlayer;
+    const input = new Input();
+    step(s, input);
+    const y0 = p.body.y;
+    let top = y0;
+    for (let i = 0; i < 40; i++) { step(s, input, ['jump']); top = Math.min(top, p.body.y); }
+    for (let i = 0; i < 80; i++) { step(s, input); top = Math.min(top, p.body.y); }
+    expect(y0 - top).toBeGreaterThanOrEqual(64);
+    expect(p.lastPeak / 16).toBeGreaterThanOrEqual(4);
+  });
 });
 
 describe('coyote time and jump buffering', () => {

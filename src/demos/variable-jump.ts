@@ -25,6 +25,8 @@ const LEVEL = [
 const FLOOR_Y = 10 * TILE;
 
 export class VariableJumpPlayer extends Player {
+  /** Stronger than the base jump so a full hold reaches the ruler's top mark (4 tiles = 64 px). */
+  override jumpSpeed = 290;
   peak = 0;
   lastPeak = 0;
   private cut = false;
