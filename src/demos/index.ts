@@ -14,24 +14,20 @@ import { checkpoint } from './checkpoint';
 import { collectibles } from './collectibles';
 import { powerup } from './powerup';
 import { keysAndDoors } from './keys-and-doors';
+import { parallax } from './parallax';
+import { movingPlatforms } from './moving-platforms';
+import { oneWay } from './one-way';
 
 /** Menu order. Adding a demo is one file and one line here. */
 export const catalogue: readonly Demo[] = [
-  runAndJump,
-  doubleJump,
-  variableJump,
-  coyoteBuffer,
-  wallClimb,
-  dash,
-  enemyPatrol,
-  rangedWeapon,
-  meleeAttack,
-  hitPoints,
-  hazards,
-  checkpoint,
-  collectibles,
-  powerup,
-  keysAndDoors,
+  // Movement
+  runAndJump, doubleJump, wallClimb, dash, coyoteBuffer, variableJump,
+  // Combat
+  rangedWeapon, meleeAttack, hitPoints, enemyPatrol,
+  // Items
+  powerup, collectibles, checkpoint,
+  // World
+  parallax, movingPlatforms, oneWay, hazards, keysAndDoors,
 ];
 
 export function findDemo(id: string): Demo | undefined {
