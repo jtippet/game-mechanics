@@ -47,10 +47,14 @@ describe('hit points', () => {
     const s = new HpScene(SPIKES, []);
     const p = s.player as HpPlayer;
     const input = new Input();
-    for (let i = 0; i < 900; i++) step(s, input, ['right']);
-    expect(s.deaths).toBeGreaterThanOrEqual(1);
-    for (let i = 0; i < 60; i++) step(s, input);       // let any dying window finish
+    let ticks = 0;
+    while (s.deaths === 0 && ticks++ < 2000) step(s, input, ['right']);
+    expect(s.deaths).toBe(1);
+    expect(p.hp).toBe(0);                              // dying window has just opened
+    for (let i = 0; i < 60; i++) step(s, input);       // let it finish (DEATH_TICKS is 40)
     expect(p.hp).toBe(MAX_HP);
+    expect(p.invuln).toBe(0);
+    expect(p.body.x).toBe(18);                         // back at spawn
   });
 });
 
