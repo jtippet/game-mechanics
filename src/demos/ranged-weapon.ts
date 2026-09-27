@@ -49,5 +49,6 @@ export const rangedWeapon: Demo = {
   category: 'Combat',
   blurb: 'Fire a projectile the way you are facing. It stops at walls and takes out a patroller on contact.',
   controls: [...BASE_CONTROLS, 'X: fire'],
+  touch: [{ action: 'act', label: 'SHOOT' }],
   create: () => new RangedScene(ARENA),
 };

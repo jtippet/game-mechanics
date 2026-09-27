@@ -51,5 +51,6 @@ export const oneWay: Demo = {
   category: 'World',
   blurb: 'Planks you can jump up through and stand on. Hold down and jump to drop through.',
   controls: [...BASE_CONTROLS, '↓ + jump: drop through'],
+  touch: [{ action: 'down', label: 'DROP' }],
   create: () => new OneWayScene(LEVEL, { accent: ACCENT, player: spawn => new OneWayPlayer(spawn) }),
 };

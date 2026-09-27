@@ -74,5 +74,6 @@ export const wallClimb: Demo = {
   category: 'Movement',
   blurb: 'Push into a hatched wall while airborne to cling and slide slowly; hold up to climb; jump to kick away.',
   controls: [...BASE_CONTROLS, '↑ or W: climb while clinging'],
+  touch: [{ action: 'up', label: 'CLIMB' }],
   create: () => new WallClimbScene(LEVEL, { accent: ACCENT, player: spawn => new WallPlayer(spawn) }),
 };
