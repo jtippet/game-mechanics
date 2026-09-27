@@ -17,6 +17,8 @@ import { keysAndDoors } from './keys-and-doors';
 import { parallax } from './parallax';
 import { movingPlatforms } from './moving-platforms';
 import { oneWay } from './one-way';
+import { crumblingPlatforms } from './crumbling-platforms';
+import { intervalPlatforms } from './interval-platforms';
 
 /** Menu order. Adding a demo is one file and one line here. */
 export const catalogue: readonly Demo[] = [
@@ -27,7 +29,7 @@ export const catalogue: readonly Demo[] = [
   // Items
   powerup, collectibles, checkpoint,
   // Platforms and surfaces
-  movingPlatforms, oneWay,
+  movingPlatforms, oneWay, crumblingPlatforms, intervalPlatforms,
   // Hazards and obstacles
   hazards,
   // World
