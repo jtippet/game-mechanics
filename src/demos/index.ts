@@ -19,6 +19,8 @@ import { movingPlatforms } from './moving-platforms';
 import { oneWay } from './one-way';
 import { crumblingPlatforms } from './crumbling-platforms';
 import { intervalPlatforms } from './interval-platforms';
+import { iceAndSand } from './ice-and-sand';
+import { conveyorBelts } from './conveyor-belts';
 
 /** Menu order. Adding a demo is one file and one line here. */
 export const catalogue: readonly Demo[] = [
@@ -29,7 +31,7 @@ export const catalogue: readonly Demo[] = [
   // Items
   powerup, collectibles, checkpoint,
   // Platforms and surfaces
-  movingPlatforms, oneWay, crumblingPlatforms, intervalPlatforms,
+  movingPlatforms, oneWay, crumblingPlatforms, intervalPlatforms, iceAndSand, conveyorBelts,
   // Hazards and obstacles
   hazards,
   // World
