@@ -280,8 +280,9 @@ rolling-rocks = 21 files, plus the seeker already added to enemy-patrol on
 ## Touch controls (shipping separately, 2026-09-27)
 
 Every demo gets on-screen touch controls: hidden until the page sees a touch,
-then a translucent overlay over the canvas with ◀ ▶ JUMP plus any extra
-buttons the demo declares via `Demo.touch` (`{ action, label }[]`, e.g.
+then a row of buttons in its own strip below the canvas (never over the
+action; the canvas is re-fitted to leave room for it) with ◀ ▶ JUMP plus any
+extra buttons the demo declares via `Demo.touch` (`{ action, label }[]`, e.g.
 `SHOOT`, `DASH`, `CLIMB`, `DROP`). Every new demo in this expansion that uses
 `act`, `up`, or `down` declares the matching button with a plain-word label.
 

@@ -2,7 +2,7 @@ import type { TouchButton } from '../demos/demo';
 import type { Action, Input } from '../engine/input';
 
 /**
- * Pure decision for whether the touch overlay should reveal itself: once a
+ * Pure decision for whether the touch bar should reveal itself: once a
  * real touch pointer has been seen, it stays revealed (module state in the
  * caller carries `prevSeen` across demos in the same page load).
  */
@@ -28,7 +28,7 @@ function reveal(): void {
 let globalListenerInstalled = false;
 
 /**
- * Document-level: the first touch anywhere (even outside the overlay) shows
+ * Document-level: the first touch anywhere (even outside the bar) shows
  * the controls from then on, for every demo in this page load. Installed
  * lazily on the first `mountTouchBar` call (not at module load) so this
  * module stays importable in a DOM-less test environment.
@@ -43,17 +43,19 @@ function ensureGlobalListener(): void {
 }
 
 /**
- * Builds a translucent overlay inside `.stage`, over the canvas: ◀ ▶ at the
- * bottom-left, JUMP nearest the bottom-right corner with up to three extra
- * buttons stacked beside it. Hidden until a touch is seen (module-level, so
- * once revealed it stays revealed across demos). Pointer tracking is by
+ * Builds a row of buttons in `slot`, which the demo view places BELOW the
+ * canvas so the controls never cover the action: ◀ ▶ on the left, JUMP at
+ * the right edge with up to three extra buttons in a 2x2 grid beside it.
+ * Hidden until a touch is seen (module-level, so once revealed it stays
+ * revealed across demos); `onReveal` fires when this bar first appears so
+ * the caller can re-fit the canvas around it. Pointer tracking is by
  * coordinates, so a thumb can slide from ◀ to ▶ without lifting.
  */
-export function mountTouchBar(slot: HTMLElement, input: Input, buttons: readonly TouchButton[]): () => void {
+export function mountTouchBar(slot: HTMLElement, input: Input, buttons: readonly TouchButton[], onReveal?: () => void): () => void {
   ensureGlobalListener();
-  const overlay = document.createElement('div');
-  overlay.className = 'touch-overlay';
-  if (!seen) overlay.hidden = true;
+  const bar = document.createElement('div');
+  bar.className = 'touch-bar';
+  if (!seen) bar.hidden = true;
 
   const left = document.createElement('div');
   left.className = 'touch-cluster touch-cluster--left';
@@ -74,8 +76,8 @@ export function mountTouchBar(slot: HTMLElement, input: Input, buttons: readonly
   }
   const jumpButton = buttons.find(b => b.action === 'jump');
   const extras = buttons.filter(b => b.action !== 'left' && b.action !== 'right' && b.action !== 'jump');
-  // A 2-column grid pinned to the bottom-right corner: JUMP sits in the
-  // corner cell, up to three extras fill leftward then upward from there.
+  // A 2-column grid at the right edge: JUMP sits in the bottom-right cell,
+  // up to three extras fill leftward then upward from there.
   const CELLS: ReadonlyArray<[column: number, row: number]> = [[2, 2], [1, 2], [2, 1], [1, 1]];
   if (jumpButton) {
     const el = makeButton(jumpButton);
@@ -92,7 +94,7 @@ export function mountTouchBar(slot: HTMLElement, input: Input, buttons: readonly
     right.appendChild(el);
   });
 
-  overlay.append(left, right);
+  bar.append(left, right);
 
   const active = new Map<number, Action>();
   const actionAt = (x: number, y: number): Action | null => {
@@ -100,7 +102,7 @@ export function mountTouchBar(slot: HTMLElement, input: Input, buttons: readonly
     return (el?.dataset.action as Action | undefined) ?? null;
   };
   const setDown = (a: Action, down: boolean): void => {
-    const el = overlay.querySelector(`[data-action="${a}"]`);
+    const el = bar.querySelector(`[data-action="${a}"]`);
     el?.classList.toggle('is-down', down);
   };
   const down = (e: PointerEvent): void => {
@@ -128,22 +130,22 @@ export function mountTouchBar(slot: HTMLElement, input: Input, buttons: readonly
     active.delete(e.pointerId);
   };
   const block = (e: Event): void => e.preventDefault();
-  overlay.addEventListener('pointerdown', down);
-  overlay.addEventListener('contextmenu', block);
-  overlay.addEventListener('touchstart', block, { passive: false });
+  bar.addEventListener('pointerdown', down);
+  bar.addEventListener('contextmenu', block);
+  bar.addEventListener('touchstart', block, { passive: false });
   window.addEventListener('pointermove', move);
   window.addEventListener('pointerup', up);
   window.addEventListener('pointercancel', up);
 
-  const onReveal = (): void => { overlay.hidden = false; };
-  revealListeners.add(onReveal);
+  const show = (): void => { bar.hidden = false; onReveal?.(); };
+  revealListeners.add(show);
 
-  slot.appendChild(overlay);
+  slot.appendChild(bar);
   return () => {
-    revealListeners.delete(onReveal);
+    revealListeners.delete(show);
     window.removeEventListener('pointermove', move);
     window.removeEventListener('pointerup', up);
     window.removeEventListener('pointercancel', up);
-    overlay.remove();
+    bar.remove();
   };
 }

@@ -9,7 +9,7 @@ import { mountTouchBar } from './touch';
 
 const esc = (s: string): string => s.replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch] ?? ch);
 
-/** Mounts one demo into root: header, canvas, hints, touch bar, loop. Returns the unmount. */
+/** Mounts one demo into root: header, canvas, touch bar below it, hints, loop. Returns the unmount. */
 export function mountDemo(root: HTMLElement, demo: Demo): () => void {
   root.innerHTML = `
     <header class="bar">
@@ -21,18 +21,22 @@ export function mountDemo(root: HTMLElement, demo: Demo): () => void {
       <canvas width="${VIEW_W}" height="${VIEW_H}" aria-label="${esc(demo.title)} demo"></canvas>
       <pre class="overlay" hidden></pre>
     </div>
+    <div class="touch-slot"></div>
     <p class="blurb">${esc(demo.blurb)}</p>
     <ul class="hints">${demo.controls.map(c => `<li>${esc(c)}</li>`).join('')}</ul>`;
 
   const canvas = root.querySelector('canvas') as HTMLCanvasElement;
   const stage = root.querySelector('.stage') as HTMLElement;
+  const touchSlot = root.querySelector('.touch-slot') as HTMLElement;
   const overlay = root.querySelector('.overlay') as HTMLElement;
   const resetButton = root.querySelector('.reset') as HTMLButtonElement;
   const ctx = setupCanvas(canvas);
   const input = new Input();
   const detachKeys = input.attachKeyboard(window);
   const touchButtons = [...TOUCH_BASE, ...(demo.touch ?? [])];
-  const unmountTouch = mountTouchBar(stage, input, touchButtons);
+  // The touch bar lives below the canvas (never over it); when it first
+  // appears the canvas is re-fitted so both stay on screen.
+  const unmountTouch = mountTouchBar(touchSlot, input, touchButtons, () => fit());
 
   let scene: Scene | null = null;
   let crashed = false;
@@ -63,7 +67,8 @@ export function mountDemo(root: HTMLElement, demo: Demo): () => void {
   const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape') location.hash = '#/'; };
   const onReset = (): void => { reset(); resetButton.blur(); };
   const fit = (): void => {
-    const availH = window.innerHeight - stage.getBoundingClientRect().top - 24;
+    // offsetHeight is 0 while the bar is hidden, so a keyboard-only page keeps the full height.
+    const availH = window.innerHeight - stage.getBoundingClientRect().top - 24 - touchSlot.offsetHeight;
     const k = scaleFor(stage.clientWidth, availH);
     canvas.style.width = `${VIEW_W * k}px`;
     canvas.style.height = `${VIEW_H * k}px`;

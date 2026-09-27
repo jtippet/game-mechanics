@@ -26,6 +26,7 @@ export const PALETTE = {
   text: '#e6e9f0',
   muted: '#9aa3b8',
   danger: '#e85a5a',
+  dangerEdge: '#ff9a8a',
   ice: '#8fd3ff',
   iceSheen: '#d9f2ff',
   sand: '#c9b27a',
