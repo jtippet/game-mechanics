@@ -41,7 +41,7 @@ export class OneWayPlayer extends Player {
 
 class OneWayScene extends BaseScene {
   protected override afterUpdate(): void {
-    this.hud = ['jump up through the planks; ↓ + jump to drop down'];
+    this.hud = ['jump up through the planks; down + jump to drop'];
   }
 }
 

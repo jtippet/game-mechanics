@@ -3,7 +3,7 @@ import { HpScene } from '../engine/hp-scene';
 import { Respawner, type Spot } from './arena';
 import { BASE_CONTROLS, type Demo } from './demo';
 
-const ACCENT = '#4fb3e8';
+const ACCENT = '#7fe0d0';   // not PALETTE.enemy's blue, so the hearts don't read as another creeper
 
 // A wide flat floor with a two-tile-high ledge in the middle. Every creeper
 // only moves while the player's back is turned: face one and it freezes.

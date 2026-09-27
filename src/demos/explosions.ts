@@ -35,6 +35,22 @@ export class ExplosionScene extends HpScene {
           onImpact: (px, py) => { this.hits += detonate(this, this.spawner, px, py, RADIUS, ACCENT); },
         }));
       }
+      // "Explodes on its first contact (wall or enemy)": onImpact above only fires for
+      // a wall/floor hit (Projectile.update only calls it on a level collision), so a
+      // bomb that flies straight into an enemy without ever touching a tile would
+      // otherwise sail through unexploded. Detonate it on that contact too.
+      const bombs = this.entities.filter((e): e is Projectile => e instanceof Projectile && !e.dead);
+      for (const bomb of bombs) {
+        for (const enemy of this.spawner.enemies()) {
+          if (overlaps(bomb.body, enemy.body)) {
+            bomb.dead = true;
+            const cx = bomb.body.x + bomb.body.w / 2;
+            const cy = bomb.body.y + bomb.body.h / 2;
+            this.hits += detonate(this, this.spawner, cx, cy, RADIUS, ACCENT);
+            break;
+          }
+        }
+      }
       for (const enemy of this.spawner.enemies()) if (overlaps(enemy.body, b)) this.damage(enemy.body.x + enemy.body.w / 2);
     }
     this.hud = [`hits ${this.hits}   deaths ${this.deaths}`, 'the blast hurts them and you'];

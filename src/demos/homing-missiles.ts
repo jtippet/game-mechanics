@@ -20,13 +20,15 @@ export class HomingScene extends BaseScene {
     this.spawner = new Respawner(this, spots);
   }
 
-  private nearest(): Rect | null {
-    const b = this.player.body;
+  /** Nearest enemy by centre-to-centre distance from `from` (the missile's own body). */
+  private nearest(from: Rect): Rect | null {
+    const fx = from.x + from.w / 2;
+    const fy = from.y + from.h / 2;
     let best: Rect | null = null;
     let bestDist = Infinity;
     for (const e of this.spawner.enemies()) {
-      const dx = e.body.x - b.x;
-      const dy = e.body.y - b.y;
+      const dx = e.body.x + e.body.w / 2 - fx;
+      const dy = e.body.y + e.body.h / 2 - fy;
       const d = dx * dx + dy * dy;
       if (d < bestDist) { bestDist = d; best = e.body; }
     }
@@ -40,7 +42,7 @@ export class HomingScene extends BaseScene {
       this.cooldown = FIRE_COOLDOWN;
       const facing = this.player.facing;
       const x = facing > 0 ? b.x + b.w : b.x - 4;
-      this.entities.push(new Projectile(x, b.y + 6, facing, 90, ACCENT, { homing: () => this.nearest(), turnRate: 0.06, life: 180 }));
+      this.entities.push(new Projectile(x, b.y + 6, facing, 90, ACCENT, { homing: self => this.nearest(self), turnRate: 0.06, life: 180 }));
     }
     const shots = this.entities.filter((e): e is Projectile => e instanceof Projectile && !e.dead);
     for (const shot of shots) {

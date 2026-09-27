@@ -24,10 +24,17 @@ const LEVEL = [
 export class LadderPlayer extends Player {
   climbing = false;
   private savedGravity = 600;
+  // Ticks after a jump-off-the-ladder during which a still-held up/down
+  // won't re-grab: without this, jumping while still touching the ladder
+  // (the very next tick, before the jump has carried the body clear of it)
+  // immediately re-triggers the grab condition below and overwrites the
+  // jump's vy with the climb speed, cancelling the jump outright.
+  private regrab = 0;
 
   protected override control(scene: BaseScene, input: Input): void {
+    if (this.regrab > 0) this.regrab--;
     const onLadder = touchesKind(scene.level, this.body, 'ladder');
-    if (!this.climbing && onLadder && (input.held('up') || input.held('down'))) {
+    if (!this.climbing && this.regrab === 0 && onLadder && (input.held('up') || input.held('down'))) {
       this.climbing = true;
       this.savedGravity = this.gravity;
       this.gravity = 0;
@@ -38,7 +45,7 @@ export class LadderPlayer extends Player {
     const dir = (input.held('right') ? 1 : 0) - (input.held('left') ? 1 : 0);
     this.body.vx = dir * 45;
     if (dir !== 0) this.facing = dir as 1 | -1;
-    if (input.pressed('jump')) { this.stopClimbing(); this.body.vy = -this.jumpSpeed; }
+    if (input.pressed('jump')) { this.stopClimbing(); this.body.vy = -this.jumpSpeed; this.regrab = 10; }
   }
 
   private stopClimbing(): void {
@@ -58,7 +65,7 @@ export class LadderScene extends BaseScene {
 
   protected override afterUpdate(): void {
     const p = this.player as LadderPlayer;
-    this.hud = [this.won ? 'You made it! R to reset' : p.climbing ? 'climbing: ↑ ↓ to move, jump to let go' : 'hold ↑ or ↓ at a ladder to grab it'];
+    this.hud = [this.won ? 'You made it! R to reset' : p.climbing ? 'climbing: up/down to move, jump to let go' : 'hold up or down at a ladder to grab it'];
   }
 }
 

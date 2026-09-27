@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FlyScene } from '../src/demos/flying';
 import { GlidePlayer, GlideScene } from '../src/demos/gliding';
 import { LadderPlayer, LadderScene } from '../src/demos/ladders';
+import { Pickup } from '../src/engine/entities/pickup';
 import type { Action } from '../src/engine/input';
 import { Input } from '../src/engine/input';
 import { BaseScene } from '../src/engine/scene';
@@ -33,6 +34,22 @@ describe('ladders', () => {
     step(s, input, ['jump']);
     expect(p.climbing).toBe(false);
     expect(p.body.vy).toBeLessThan(0);
+  });
+
+  it('a jump off the ladder is not cancelled by up still held on the next tick', () => {
+    const s = new BaseScene(ROWS, { player: spawn => new LadderPlayer(spawn) });
+    const p = s.player as LadderPlayer;
+    const input = new Input();
+    for (let i = 0; i < 40; i++) step(s, input, ['right']);            // to the ladder at col 5 (x 80..96)
+    for (let i = 0; i < 5; i++) step(s, input, ['up']);                // mid-ladder, still climbing
+    expect(p.climbing).toBe(true);
+    step(s, input, ['up', 'jump']);                                   // jump off while still holding up
+    expect(p.climbing).toBe(false);
+    for (let i = 0; i < 5; i++) {
+      step(s, input, ['up']);                                         // up still held, still touching the ladder
+      expect(p.climbing).toBe(false);
+      if (i === 0) expect(p.body.vy).toBeLessThan(0);                 // the tick after the jump: not re-grabbed
+    }
   });
 
   it('follows the hint (walk to ladder 1, climb near the top, jump off, land on ledge A) with no moveTo', () => {
@@ -119,9 +136,25 @@ describe('flying', () => {
     const y0 = s.player.body.y;
     for (let i = 0; i < 30; i++) step(s, input, ['up']);
     expect(s.player.body.y).toBeLessThan(y0 - 30);
+    for (let i = 0; i < 20; i++) step(s, input, ['right']);           // clear of the wings' cell before it can respawn under a parked player
     for (let i = 0; i < 600; i++) step(s, input);
     expect(s.flying).toBe(0);
     expect(s.player.gravity).toBe(600);
+  });
+
+  it('spent wings return 70 ticks after the flight ends', () => {
+    const s = new FlyScene();
+    const input = new Input();
+    const pickupCount = (): number => s.entities.filter(e => e instanceof Pickup).length;
+    s.player.moveTo(s.level.pickups[1]);                              // stand on the wings
+    step(s, input);
+    step(s, input);                                                   // collects: only the goal Pickup remains
+    expect(pickupCount()).toBe(1);
+    let guard = 0;
+    while (s.flying > 0) { step(s, input); guard++; if (guard > 600) throw new Error('flight never ended'); }
+    s.player.moveTo({ x: 20 * 16, y: 1 * 16 });                       // off the wings' cell, so the respawn isn't re-collected on sight
+    for (let i = 0; i < 70; i++) step(s, input);                      // 70 idle ticks since the flight ended
+    expect(pickupCount()).toBe(2);
   });
 
   it('follows the hint (walk to the wings, then fly up) with no moveTo', () => {

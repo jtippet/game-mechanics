@@ -1,5 +1,6 @@
 import { Pickup } from '../engine/entities/pickup';
 import { Player } from '../engine/entities/player';
+import type { Vec } from '../engine/geom';
 import type { Input } from '../engine/input';
 import { drawBar, PALETTE } from '../engine/renderer';
 import { BaseScene } from '../engine/scene';
@@ -7,6 +8,7 @@ import { BASE_CONTROLS, type Demo } from './demo';
 
 const ACCENT = '#ffd166';
 const FLY_TICKS = 480;
+const RETURN_TICKS = 60;
 
 const LEVEL = [
   '########################################',
@@ -43,6 +45,9 @@ export class FlyPlayer extends Player {
 
 export class FlyScene extends BaseScene {
   won = false;
+  private readonly wingsCell: Vec;
+  private returnAt = 0;
+  private prevFlying = 0;
 
   get flying(): number { return (this.player as FlyPlayer).flying; }
 
@@ -50,12 +55,23 @@ export class FlyScene extends BaseScene {
     super(LEVEL, { accent: ACCENT, player: spawn => new FlyPlayer(spawn) });
     // Pickups are collected in row-major reading order: the goal (row 2) comes before the wings (row 9).
     const [goal, wings] = this.level.pickups;
-    this.entities.push(new Pickup(wings, () => { (this.player as FlyPlayer).flying = FLY_TICKS; }, ACCENT));
+    this.wingsCell = wings;
+    this.placeWings();
     this.entities.push(new Pickup(goal, () => { this.won = true; }, PALETTE.key));
   }
 
+  private placeWings(): void {
+    this.entities.push(new Pickup(this.wingsCell, () => { (this.player as FlyPlayer).flying = FLY_TICKS; }, ACCENT));
+  }
+
   protected override afterUpdate(): void {
-    this.hud = [this.won ? 'You made it! R to reset' : this.flying > 0 ? `flying ${(this.flying / 60).toFixed(1)}s: ↑ ↓ to steer` : 'grab the wings'];
+    if (this.prevFlying > 0 && this.flying === 0) this.returnAt = this.ticks + RETURN_TICKS;
+    this.prevFlying = this.flying;
+    if (this.returnAt > 0 && this.ticks >= this.returnAt) { this.returnAt = 0; this.placeWings(); }
+    this.hud = [this.won ? 'You made it! R to reset'
+      : this.flying > 0 ? `flying: ${(this.flying / 60).toFixed(1)}s left, up/down to steer`
+      : this.returnAt > 0 ? 'wings spent; they return in a moment'
+      : 'grab the wings'];
   }
 
   protected override drawHud(ctx: CanvasRenderingContext2D): void {

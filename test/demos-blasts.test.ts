@@ -10,6 +10,25 @@ const step = (s: BaseScene, input: Input, held: Action[] = []): void => {
   input.tick(); s.update(input);
 };
 const ROOM = ['####################', '#..................#', '#..................#', '#@.................#', '####################'];
+// A single-tile shelf (col 5, x 80..96, top y 64) over an otherwise deep pit.
+// Measured (test/zzz-debug scratch run): the bomb's own arc only reaches y 58
+// by the time it's past x 96 (clear of the shelf) and never gets low enough to
+// touch that tile or the far pit floor within the 30-tick test window — so a
+// hit inside that window can only come from touching the enemy's body, which
+// stands on the shelf and reaches up (to y 50) into the bomb's rising path.
+const PIT = [
+  '####################',
+  '#..................#',
+  '#..................#',
+  '#@.................#',
+  '#....#.............#',
+  '#..................#',
+  '#..................#',
+  '#..................#',
+  '#..................#',
+  '#..................#',
+  '####################',
+];
 
 describe('explosions', () => {
   it('a thrown bomb kills an enemy near its landing spot and spares the far-away thrower', () => {
@@ -21,6 +40,15 @@ describe('explosions', () => {
     for (let i = 0; i < 90; i++) step(s, input);
     expect(s.hits).toBe(1);
     expect(s.hp.hp).toBe(3);
+  });
+  it('a bomb flying straight into an enemy detonates on that contact, not just on a wall', () => {
+    const s = new ExplosionScene(PIT, [{ cell: { x: 80, y: 48 }, dir: 1, turnAtLedges: false }]);
+    s.spawner.enemies()[0].speed = 0;                 // stands on the shelf at x 82..94, y 50..64
+    const input = new Input();
+    step(s, input);
+    step(s, input, ['act']);
+    for (let i = 0; i < 30; i++) step(s, input);
+    expect(s.hits).toBe(1);
   });
   it('a point-blank bomb costs the thrower exactly one heart', () => {
     const s = new ExplosionScene(ROOM, []);

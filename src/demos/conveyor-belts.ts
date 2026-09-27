@@ -48,7 +48,7 @@ export class ConveyorScene extends BaseScene {
   }
   protected override afterUpdate(): void {
     const p = this.player as ConveyorPlayer;
-    this.hud = [p.beltSpeed === 0 ? 'off the belts' : `belt ${p.beltSpeed > 0 ? '→' : '←'} ${Math.abs(p.beltSpeed)} px/s (you walk 90)`, 'one belt outruns you, one you can beat, one matches'];
+    this.hud = [p.beltSpeed === 0 ? 'off the belts' : `belt ${p.beltSpeed > 0 ? 'right' : 'left'} ${Math.abs(p.beltSpeed)} px/s (you walk 90)`, 'one belt outruns you, one you can beat, one matches'];
   }
 }
 

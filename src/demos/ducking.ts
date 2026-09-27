@@ -83,7 +83,7 @@ export class DuckScene extends HpScene {
       }
     }
     const p = this.hp as DuckPlayer;
-    this.hud = [this.won ? 'You made it! R to reset' : p.ducking ? 'ducking: slower, no firing, half height' : 'hold ↓ to duck under the shots'];
+    this.hud = [this.won ? 'You made it! R to reset' : p.ducking ? 'ducking: slower, no firing, half height' : 'hold down to duck under the shots'];
   }
 }
 

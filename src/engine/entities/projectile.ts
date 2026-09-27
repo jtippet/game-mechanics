@@ -8,7 +8,7 @@ import type { BaseScene, Entity } from '../scene';
 export interface ProjectileOptions {
   gravity?: number;
   vy0?: number;
-  homing?: () => Rect | null;
+  homing?: (self: Rect) => Rect | null;
   turnRate?: number;
   life?: number;
   onImpact?: (x: number, y: number) => void;
@@ -28,7 +28,7 @@ export class Projectile implements Entity {
     const o = this.opts;
     if (o.gravity) this.body.vy += o.gravity * DT;
     if (o.homing) {
-      const t = o.homing();
+      const t = o.homing(this.body);
       if (t) {
         const speed = Math.hypot(this.body.vx, this.body.vy);
         const want = Math.atan2(t.y + t.h / 2 - (this.body.y + this.body.h / 2), t.x + t.w / 2 - (this.body.x + this.body.w / 2));
