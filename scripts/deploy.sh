@@ -16,11 +16,23 @@ URL_PATH="${MECHANICS_URL_PATH:-/mechanics/}"
 pnpm build
 test -f dist/index.html
 
-# --chmod keeps files group-writable like the rest of /srv/static; --no-o
-# --no-g stop rsync (run as root) from forcing root ownership onto the
-# copied files, so the directory's setgid bit then assigns them group
-# staticpub instead.
-rsync -a --no-o --no-g --delete --chmod=Dg+s,ug+rw,o+rX dist/ "$HOST:$DEST"
+# static-web0 has no rsync, so ship a tarball over ssh into a staging
+# directory beside the target and swap it in with one rename: the old tree
+# is replaced whole (stale hashed assets go with it) and readers never see
+# a half-copied directory. Files are created by root; the setgid bit on
+# /srv/static assigns group staticpub, and the chmod keeps them group-writable
+# like the rest of the box.
+STAGE="${DEST%/}.new"
+OLD="${DEST%/}.old"
+tar -C dist -cf - . | ssh "$HOST" "set -e
+  rm -rf '$STAGE' '$OLD'
+  mkdir -p '$STAGE'
+  tar -C '$STAGE' -xf -
+  chmod -R ug+rw,o+rX '$STAGE'
+  find '$STAGE' -type d -exec chmod g+s {} +
+  if [ -d '${DEST%/}' ]; then mv '${DEST%/}' '$OLD'; fi
+  mv '$STAGE' '${DEST%/}'
+  rm -rf '$OLD'"
 
 # Verify from inside the box: gw0 only lets edge0 reach nginx on :80.
 code=$(ssh "$HOST" "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1$URL_PATH")
