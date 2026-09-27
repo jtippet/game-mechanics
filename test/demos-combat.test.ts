@@ -48,3 +48,23 @@ describe('melee attack', () => {
     expect(enemies(s).length).toBe(0);
   });
 });
+
+describe('respawn grace', () => {
+  it('an idle player is not touched again on every tick a patroller overlaps the spawn cell', () => {
+    const s = new RangedScene(ROOM, [{ cell: { x: 32, y: 48 }, dir: -1, turnAtLedges: false }]);
+    const input = new Input();
+    const perTick: number[] = [];
+    for (let i = 0; i < 400; i++) {
+      step(s, input);
+      perTick.push(s.touched);
+    }
+    // With a 60-tick grace, the patroller cannot plausibly re-touch the
+    // idle player on every pass through the spawn cell over 400 ticks.
+    expect(s.touched).toBeLessThanOrEqual(4);
+    expect(s.touched).toBeGreaterThanOrEqual(1);
+    // Touches never jump by more than 1 between consecutive ticks.
+    for (let i = 1; i < perTick.length; i++) {
+      expect(perTick[i] - perTick[i - 1]).toBeLessThanOrEqual(1);
+    }
+  });
+});

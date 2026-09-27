@@ -40,7 +40,7 @@ export class MeleeScene extends BaseScene {
         if (overlaps(box, enemy.body)) { this.spawner.kill(enemy); this.hits++; }
       }
     }
-    if (this.spawner.update()) { this.touched++; this.respawn(); }
+    if (this.spawner.update() && this.spawner.hurtPlayer()) { this.touched++; this.respawn(); }
     this.hud = [`hits ${this.hits}   touched ${this.touched}`];
   }
 

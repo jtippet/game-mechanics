@@ -56,6 +56,7 @@ export class Input {
   attachKeyboard(target: EventTarget): () => void {
     const onDown = (e: Event): void => {
       const k = e as KeyboardEvent;
+      if (k.ctrlKey || k.metaKey || k.altKey) return;
       const a = keyToAction(k.code);
       if (!a) return;
       k.preventDefault();

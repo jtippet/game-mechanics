@@ -10,7 +10,7 @@ class PatrolScene extends BaseScene {
   touched = 0;
 
   protected override afterUpdate(): void {
-    if (this.spawner.update()) { this.touched++; this.respawn(); }
+    if (this.spawner.update() && this.spawner.hurtPlayer()) { this.touched++; this.respawn(); }
     this.hud = [`touched ${this.touched}`, 'two turn at ledges; the floor one only turns at walls'];
   }
 

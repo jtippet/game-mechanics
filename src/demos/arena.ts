@@ -27,11 +27,14 @@ export const ARENA_SPOTS: Spot[] = [
 ];
 
 const RESPAWN_TICKS = 120;
+const GRACE_TICKS = 60;
 
 /** Keeps every spot populated: a killed patroller comes back at its spot after a delay. */
 export class Respawner {
   private pending: Array<{ spot: Spot; at: number }> = [];
   private readonly alive = new Map<Patroller, Spot>();
+  private graceUntil = 0;
+  private flickering = false;
 
   constructor(private readonly scene: BaseScene, private readonly spots: Spot[]) {
     for (const spot of spots) this.spawn(spot);
@@ -55,11 +58,31 @@ export class Respawner {
     this.pending.push({ spot, at: this.scene.ticks + RESPAWN_TICKS });
   }
 
-  /** Call from afterUpdate. Returns true when the player touched a live enemy. */
+  /**
+   * Call once a tick when `update()` reports a touch, to decide whether it
+   * actually hurts: right after a respawn the player sits back on the spawn
+   * cell, which an idle patroller can be standing on or walk through on the
+   * very next tick, so a raw overlap would count another touch every tick
+   * it stays there. Returns false while a grace window from a prior hurt is
+   * still running; otherwise starts a new one and returns true.
+   */
+  hurtPlayer(): boolean {
+    if (this.scene.ticks < this.graceUntil) return false;
+    this.graceUntil = this.scene.ticks + GRACE_TICKS;
+    this.flickering = true;
+    this.scene.player.flicker = true;
+    return true;
+  }
+
+  /** Call from afterUpdate. Returns true when the player touches a live enemy. */
   update(): boolean {
     const due = this.pending.filter(p => p.at <= this.scene.ticks);
     this.pending = this.pending.filter(p => p.at > this.scene.ticks);
     for (const d of due) this.spawn(d.spot);
+    if (this.flickering && this.scene.ticks >= this.graceUntil) {
+      this.flickering = false;
+      this.scene.player.flicker = false;
+    }
     return this.enemies().some(e => overlaps(e.body, this.scene.player.body));
   }
 }

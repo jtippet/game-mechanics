@@ -67,7 +67,7 @@ describe('keyboard mapping', () => {
   });
 
   it('attachKeyboard presses on keydown, releases on keyup and blur, prevents default only for mapped keys', () => {
-    type Handler = (e: { code: string; repeat?: boolean; preventDefault: () => void }) => void;
+    type Handler = (e: { code: string; repeat?: boolean; ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean; preventDefault: () => void }) => void;
     const handlers: Record<string, Handler[]> = {};
     const target = {
       addEventListener: (type: string, h: Handler) => { (handlers[type] ??= []).push(h); },
@@ -76,8 +76,15 @@ describe('keyboard mapping', () => {
     const i = new Input();
     const detach = i.attachKeyboard(target as unknown as EventTarget);
     let prevented = 0;
-    const fire = (type: string, code: string, repeat = false) =>
-      (handlers[type] ?? []).forEach(h => h({ code, repeat, preventDefault: () => { prevented++; } }));
+    const fire = (type: string, code: string, repeat = false, mods: { ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean } = {}) =>
+      (handlers[type] ?? []).forEach(h => h({
+        code,
+        repeat,
+        ctrlKey: mods.ctrlKey ?? false,
+        metaKey: mods.metaKey ?? false,
+        altKey: mods.altKey ?? false,
+        preventDefault: () => { prevented++; },
+      }));
 
     fire('keydown', 'Space');
     i.tick();
@@ -93,6 +100,12 @@ describe('keyboard mapping', () => {
     (handlers.blur ?? []).forEach(h => h({ code: '', preventDefault: () => {} }));
     i.tick();
     expect(i.held('left')).toBe(false);
+
+    const preventedBeforeModifier = prevented;
+    fire('keydown', 'KeyR', false, { ctrlKey: true });
+    i.tick();
+    expect(prevented).toBe(preventedBeforeModifier);
+    expect(i.held('reset')).toBe(false);
 
     detach();
     fire('keydown', 'KeyZ');

@@ -38,7 +38,7 @@ export class RangedScene extends BaseScene {
         }
       }
     }
-    if (this.spawner.update()) { this.touched++; this.respawn(); }
+    if (this.spawner.update() && this.spawner.hurtPlayer()) { this.touched++; this.respawn(); }
     this.hud = [`hits ${this.hits}   touched ${this.touched}`];
   }
 }
