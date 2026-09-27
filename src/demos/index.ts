@@ -3,6 +3,7 @@ import { runAndJump } from './run-and-jump';
 import { doubleJump } from './double-jump';
 import { variableJump } from './variable-jump';
 import { ladders } from './ladders';
+import { ducking } from './ducking';
 import { gliding } from './gliding';
 import { flying } from './flying';
 import { coyoteBuffer } from './coyote-buffer';
@@ -34,7 +35,7 @@ import { levers } from './levers';
 /** Menu order. Adding a demo is one file and one line here. */
 export const catalogue: readonly Demo[] = [
   // Movement
-  runAndJump, doubleJump, wallClimb, dash, coyoteBuffer, variableJump, ladders, gliding, flying,
+  runAndJump, doubleJump, wallClimb, dash, coyoteBuffer, variableJump, ladders, ducking, gliding, flying,
   // Combat
   rangedWeapon, meleeAttack, hitPoints, enemyPatrol,
   // Items
