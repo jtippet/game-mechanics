@@ -1,4 +1,34 @@
-:root { color-scheme: dark; --bg: #0b1020; --panel: #141a30; --edge: #2c3448; --text: #e6e9f0; --muted: #9aa3b8; --accent: #f2b632; }
+:root {
+  color-scheme: dark;
+  --bg: #0b1020; --panel: #141a30; --edge: #2c3448; --text: #e6e9f0; --muted: #9aa3b8; --accent: #f2b632;
+}
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.4 system-ui, sans-serif; }
 #app { max-width: 1000px; margin: 0 auto; padding: 12px; }
+a { color: var(--accent); }
+
+.bar { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.bar h1 { font-size: 22px; margin: 0; }
+.bar .tagline { color: var(--muted); margin: 0; }
+.bar .back { text-decoration: none; }
+.bar .reset { margin-left: auto; background: var(--panel); color: var(--text); border: 1px solid var(--edge); border-radius: 6px; padding: 6px 10px; font: inherit; cursor: pointer; }
+
+.group h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 20px 0 8px; }
+.cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.card { display: block; background: var(--panel); border: 1px solid var(--edge); border-radius: 8px; padding: 12px; text-decoration: none; color: var(--text); }
+.card:hover, .card:focus-visible { border-color: var(--accent); outline: none; }
+.card b { display: block; margin-bottom: 4px; }
+.card span { color: var(--muted); font-size: 14px; }
+
+.stage { position: relative; display: flex; justify-content: center; overflow-x: auto; }
+.stage canvas { image-rendering: pixelated; image-rendering: crisp-edges; background: var(--bg); display: block; }
+.overlay { position: absolute; inset: 0; margin: 0; padding: 16px; background: rgba(11, 16, 32, 0.9); color: #e85a5a; white-space: pre-wrap; font: 14px/1.4 monospace; display: flex; align-items: center; justify-content: center; text-align: center; }
+.overlay[hidden] { display: none; }
+
+.blurb { margin: 12px 0 4px; }
+.hints { margin: 0; padding: 0; list-style: none; display: flex; gap: 16px; flex-wrap: wrap; color: var(--muted); font-size: 14px; }
+
+.touchbar { display: none; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-top: 12px; touch-action: none; user-select: none; -webkit-user-select: none; }
+.touchbar button { height: 64px; font: bold 18px system-ui, sans-serif; background: var(--panel); color: var(--text); border: 1px solid var(--edge); border-radius: 10px; touch-action: none; }
+.touchbar button:active { background: var(--edge); }
+@media (pointer: coarse) { .touchbar { display: grid; } }
