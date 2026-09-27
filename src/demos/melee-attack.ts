@@ -5,7 +5,7 @@ import { BaseScene } from '../engine/scene';
 import { ARENA, ARENA_SPOTS, Respawner, type Spot } from './arena';
 import { BASE_CONTROLS, type Demo } from './demo';
 
-const ACCENT = '#ff8fa3';
+const ACCENT = '#8ce86a';   // green, per Jeff 2026-09-27
 const SWING_TICKS = 8;
 const SWING_COOLDOWN = 20;
 const REACH = 14;
