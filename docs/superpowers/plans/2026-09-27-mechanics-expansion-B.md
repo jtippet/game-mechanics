@@ -14,6 +14,8 @@
 
 Identical to Plan A's Global Constraints (copy them into every dispatch): zero deps; procedural art with one accent per demo; 40-char rows; jump rules (≤ 2 tiles up, ≤ 3 cells across, 2 when rising 2; a demo that changes jump physics says so); respawning scenes reset their player state; `touch` buttons for `act`/`up`/`down` with plain-word labels; `contacts` never mutated in place; `controlLock` read-before-decrement; Node-only vitest; never commit red; plain git add by name, no reset/rebase/amend; the six exact category names.
 
+Plus: **marker rows.** `Player.moveTo(cell)` stands the player on the bottom of its cell, so a standing player's body occupies the SAME row as `@` (the row directly above the floor). Any marker a standing player must touch (`*`, `k`, `L`, `P`/`Q`, `M`, turret bullets' height, a mine pad) goes on that row, never the one above it; Plan A shipped levers and portals one row too high and no gate caught it. Every interactive demo adds a "hint is followable" test that walks the player there with held keys (no `moveTo`) and asserts the world changed (door opened, teleport counted, item taken).
+
 Plus: every combat demo that damages the player extends `HpScene` and calls `tickDying()` first in `afterUpdate`. Enemy spots go through `Respawner` (arena.ts), whose `Spot` gains `kind?: 'patrol' | 'seek' | 'creep'` in Task 6 (Task 1–5 use the existing `seek?: boolean`).
 
 ## Review Focus
