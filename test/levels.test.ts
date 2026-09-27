@@ -11,7 +11,7 @@ const REACH_UP_1 = 3;    // when rising one tile
 const REACH_UP_2 = 2;    // when rising two tiles
 
 const PASSABLE: TileKind[] = ['empty', 'spike', 'oneway', 'door'];
-const FLOOR: TileKind[] = ['solid', 'oneway', 'door', 'climb'];
+const FLOOR: TileKind[] = ['solid', 'oneway', 'climb'];
 const passable = (l: Level, c: number, r: number): boolean => PASSABLE.includes(tileAt(l, c, r));
 const standable = (l: Level, c: number, r: number): boolean => passable(l, c, r) && FLOOR.includes(tileAt(l, c, r + 1));
 
