@@ -83,6 +83,6 @@ export class BaseScene implements Scene {
   /** Drawn in world space after the player. */
   protected drawWorld(_ctx: CanvasRenderingContext2D): void {}
   protected drawHud(ctx: CanvasRenderingContext2D): void {
-    this.hud.forEach((line, i) => drawText(ctx, line, 4, 4 + i * 10));
+    this.hud.forEach((line, i) => drawText(ctx, line, 20, 4 + i * 10));
   }
 }

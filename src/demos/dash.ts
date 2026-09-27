@@ -83,7 +83,7 @@ export class DashScene extends BaseScene {
   protected override drawHud(ctx: CanvasRenderingContext2D): void {
     super.drawHud(ctx);
     const p = this.player as DashPlayer;
-    drawBar(ctx, 4, 26, 60, 4, 1 - p.cooldown / (DASH_TICKS + COOLDOWN_TICKS), ACCENT);
+    drawBar(ctx, 20, 26, 60, 4, 1 - p.cooldown / (DASH_TICKS + COOLDOWN_TICKS), ACCENT);
   }
 
   override respawn(): void {

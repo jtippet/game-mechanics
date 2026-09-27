@@ -86,7 +86,7 @@ showing its title and blurb. `Escape` in a demo returns to the menu. Unknown
 ids show the menu.
 
 Vite builds with `base: './'` so asset URLs are relative and the bundle works
-at `/`, `/mechanics/`, or a `file://` URL alike.
+at `/` or `/mechanics/`.
 
 ### Engine
 

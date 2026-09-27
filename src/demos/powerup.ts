@@ -57,7 +57,7 @@ export class PowerupScene extends BaseScene {
 
   protected override drawHud(ctx: CanvasRenderingContext2D): void {
     super.drawHud(ctx);
-    drawBar(ctx, 4, 16, 80, 4, this.boost / BOOST_TICKS, ACCENT);
+    drawBar(ctx, 20, 16, 80, 4, this.boost / BOOST_TICKS, ACCENT);
   }
 }
 

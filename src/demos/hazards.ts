@@ -35,7 +35,7 @@ export class HazardScene extends BaseScene {
       p.body.vx = 0;
       p.body.vy = -120;
     }
-    this.hud = [`deaths ${this.deaths}`, 'only the pointy half of a spike hurts'];
+    this.hud = [`deaths ${this.deaths}`, 'only the lower half of a spike cell hurts'];
   }
 }
 
@@ -43,7 +43,7 @@ export const hazards: Demo = {
   id: 'hazards',
   title: 'Hazards',
   category: 'World',
-  blurb: 'Spikes. Touch the pointy half and you die and restart. Brushing past the base of one is safe.',
+  blurb: 'Spikes. Touch the pointy half and you die and restart. Clearing the tips is enough; you do not need to clear the whole cell.',
   controls: BASE_CONTROLS,
   create: () => new HazardScene(LEVEL, { accent: ACCENT }),
 };

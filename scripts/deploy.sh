@@ -16,9 +16,11 @@ URL_PATH="${MECHANICS_URL_PATH:-/mechanics/}"
 pnpm build
 test -f dist/index.html
 
-# --chmod keeps files group-writable like the rest of /srv/static; setgid on
-# the directory makes them staticpub-owned regardless of who wrote them.
-rsync -a --delete --chmod=Dg+s,ug+rw,o+rX dist/ "$HOST:$DEST"
+# --chmod keeps files group-writable like the rest of /srv/static; --no-o
+# --no-g stop rsync (run as root) from forcing root ownership onto the
+# copied files, so the directory's setgid bit then assigns them group
+# staticpub instead.
+rsync -a --no-o --no-g --delete --chmod=Dg+s,ug+rw,o+rX dist/ "$HOST:$DEST"
 
 # Verify from inside the box: gw0 only lets edge0 reach nginx on :80.
 code=$(ssh "$HOST" "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1$URL_PATH")

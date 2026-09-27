@@ -20,8 +20,8 @@ a { color: var(--accent); }
 .card b { display: block; margin-bottom: 4px; }
 .card span { color: var(--muted); font-size: 14px; }
 
-.stage { position: relative; display: flex; justify-content: center; overflow-x: auto; }
-.stage canvas { image-rendering: pixelated; image-rendering: crisp-edges; background: var(--bg); display: block; }
+.stage { position: relative; display: flex; justify-content: safe center; overflow-x: auto; }
+.stage canvas { image-rendering: crisp-edges; image-rendering: pixelated; background: var(--bg); display: block; }
 .overlay { position: absolute; inset: 0; margin: 0; padding: 16px; background: rgba(11, 16, 32, 0.9); color: #e85a5a; white-space: pre-wrap; font: 14px/1.4 monospace; display: flex; align-items: center; justify-content: center; text-align: center; }
 .overlay[hidden] { display: none; }
 

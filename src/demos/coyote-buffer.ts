@@ -48,6 +48,7 @@ export class CoyotePlayer extends Player {
   }
 
   protected override onJump(): void {
+    this.buffer = 0;
     if (!this.contacts.onGround) this.coyoteJumps++;
     this.sinceGround = COYOTE_TICKS + 1;          // the window is spent
   }
@@ -74,8 +75,8 @@ class CoyoteScene extends BaseScene {
     super.drawHud(ctx);
     const p = this.player as CoyotePlayer;
     const coyoteLeft = p.contacts.onGround ? 1 : Math.max(0, COYOTE_TICKS - p.sinceGround) / COYOTE_TICKS;
-    drawBar(ctx, 4, 26, 60, 4, coyoteLeft, ACCENT);
-    drawBar(ctx, 70, 26, 60, 4, p.buffer / BUFFER_TICKS, ACCENT);
+    drawBar(ctx, 20, 26, 60, 4, coyoteLeft, ACCENT);
+    drawBar(ctx, 86, 26, 60, 4, p.buffer / BUFFER_TICKS, ACCENT);
   }
 }
 

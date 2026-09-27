@@ -94,9 +94,9 @@ export class HpScene extends BaseScene {
     const p = this.player as HpPlayer;
     for (let i = 0; i < MAX_HP; i++) {
       ctx.fillStyle = i < p.hp ? ACCENT : PALETTE.climb;
-      ctx.fillRect(4 + i * 10, 4, 8, 6);
+      ctx.fillRect(20 + i * 10, 4, 8, 6);
     }
-    this.hud.forEach((line, i) => drawText(ctx, line, 4, 14 + i * 10));
+    this.hud.forEach((line, i) => drawText(ctx, line, 20, 14 + i * 10));
   }
 }
 

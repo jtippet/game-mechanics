@@ -65,7 +65,7 @@ export class KeyDoorScene extends BaseScene {
 
   protected override drawHud(ctx: CanvasRenderingContext2D): void {
     super.drawHud(ctx);
-    if (this.hasKey && !this.opened) drawKey(ctx, 10, 20);
+    if (this.hasKey && !this.opened) drawKey(ctx, 26, 20);
   }
 }
 
