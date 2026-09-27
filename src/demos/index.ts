@@ -16,6 +16,8 @@ import { hitPoints } from './hit-points';
 import { lasers } from './lasers';
 import { arcingShots } from './arcing-shots';
 import { homingMissiles } from './homing-missiles';
+import { explosions } from './explosions';
+import { grenades } from './grenades';
 import { hazards } from './hazards';
 import { landmines } from './landmines';
 import { flameJets } from './flame-jets';
@@ -40,7 +42,7 @@ export const catalogue: readonly Demo[] = [
   // Movement
   runAndJump, doubleJump, wallClimb, dash, coyoteBuffer, variableJump, ladders, ducking, gliding, flying,
   // Combat
-  rangedWeapon, meleeAttack, hitPoints, enemyPatrol, lasers, arcingShots, homingMissiles,
+  rangedWeapon, meleeAttack, hitPoints, enemyPatrol, lasers, arcingShots, homingMissiles, explosions, grenades,
   // Items
   powerup, collectibles, checkpoint,
   // Platforms and surfaces

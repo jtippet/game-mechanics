@@ -15,6 +15,11 @@ export class HpScene extends BaseScene {
 
   get hp(): HpPlayer { return this.player as HpPlayer; }
 
+  /** Public entry point for damage sources that live outside the scene (e.g. a shared explosion helper); never bracket-access `damage` instead. */
+  hurt(fromX: number): boolean {
+    return this.damage(fromX);
+  }
+
   protected damage(fromX: number): boolean {
     if (this.dying > 0) return false;
     const landed = this.hp.hurt(fromX);
