@@ -1,6 +1,8 @@
+import { DT } from '../engine/constants';
 import { Patroller } from '../engine/entities/patroller';
 import type { Vec } from '../engine/geom';
 import { overlaps } from '../engine/geom';
+import { moveBody } from '../engine/physics';
 import { drawActor, PALETTE } from '../engine/renderer';
 import type { BaseScene } from '../engine/scene';
 
@@ -19,7 +21,7 @@ export const ARENA = [
   '########################################',
 ];
 
-export interface Spot { cell: Vec; dir: 1 | -1; turnAtLedges: boolean; seek?: boolean }
+export interface Spot { cell: Vec; dir: 1 | -1; turnAtLedges: boolean; seek?: boolean; kind?: 'patrol' | 'seek' | 'creep' }
 
 /** A patroller that naively walks toward the player's x, ledges or not. */
 export class Seeker extends Patroller {
@@ -30,6 +32,43 @@ export class Seeker extends Patroller {
 
   override draw(ctx: CanvasRenderingContext2D): void {
     drawActor(ctx, this.body, PALETTE.danger, this.dir);
+  }
+}
+
+/**
+ * A patroller that only moves while the player isn't looking at it: frozen
+ * whenever the player faces the side it's on, otherwise it walks toward the
+ * player (ledges and walls still apply, via Patroller.update).
+ */
+export class Creeper extends Patroller {
+  frozen = false;
+
+  override update(scene: BaseScene): void {
+    const p = scene.player;
+    const side: 1 | -1 = this.body.x < p.body.x ? -1 : 1;   // where the creeper is, from the player
+    this.frozen = p.facing === side;                          // the player is looking at it
+    if (this.frozen) {
+      this.body.vx = 0;
+      this.body.vy = Math.min(this.body.vy + this.gravity * DT, 260);
+      moveBody(scene.level, this.body);
+      return;
+    }
+    this.dir = side === -1 ? 1 : -1;                          // walk toward the player
+    super.update(scene);
+  }
+
+  override draw(ctx: CanvasRenderingContext2D): void {
+    drawActor(ctx, this.body, PALETTE.enemy, this.dir);
+    if (this.frozen) {
+      // Cover the eye pixels drawActor just painted: a frozen creeper reads
+      // as watching back, with no telltale eyes to give its next move away.
+      ctx.fillStyle = PALETTE.enemy;
+      const ex = this.dir === 1
+        ? [this.body.x + this.body.w - 7, this.body.x + this.body.w - 4]
+        : [this.body.x + 2, this.body.x + 5];
+      ctx.fillRect(ex[0], this.body.y + 4, 2, 2);
+      ctx.fillRect(ex[1], this.body.y + 4, 2, 2);
+    }
   }
 }
 
@@ -54,8 +93,9 @@ export class Respawner {
   }
 
   private spawn(spot: Spot): void {
-    const p = spot.seek
-      ? new Seeker(spot.cell, spot.dir, false)
+    const kind = spot.kind ?? (spot.seek ? 'seek' : 'patrol');
+    const p = kind === 'seek' ? new Seeker(spot.cell, spot.dir, false)
+      : kind === 'creep' ? new Creeper(spot.cell, spot.dir, spot.turnAtLedges)
       : new Patroller(spot.cell, spot.dir, spot.turnAtLedges);
     this.alive.set(p, spot);
     this.scene.entities.push(p);

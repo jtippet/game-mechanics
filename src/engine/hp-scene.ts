@@ -1,5 +1,5 @@
 import { HpPlayer } from './entities/hp-player';
-import { drawText, PALETTE } from './renderer';
+import { drawShield, drawText, PALETTE } from './renderer';
 import { BaseScene, type SceneOptions } from './scene';
 
 const DEATH_TICKS = 40;
@@ -55,8 +55,7 @@ export class HpScene extends BaseScene {
     }
     if (p.armor > 0) {
       const x = 20 + p.maxHp * 10 + 4;
-      ctx.fillStyle = PALETTE.text;
-      ctx.fillRect(x, 4, 8, 1); ctx.fillRect(x, 4, 1, 5); ctx.fillRect(x + 7, 4, 1, 5); ctx.fillRect(x + 1, 9, 6, 1); ctx.fillRect(x + 3, 10, 2, 1);
+      drawShield(ctx, x, 4);
     }
     this.hud.forEach((line, i) => drawText(ctx, line, 20, 14 + i * 10));
   }

@@ -157,6 +157,12 @@ export function drawKey(ctx: CanvasRenderingContext2D, cx: number, cy: number): 
   ctx.fillRect(cx + 3, cy + 1, 1, 2);
 }
 
+/** An 8x7 shield outline, top-left at (x, y): the HUD's armor badge and the armor demo's pickup share this. */
+export function drawShield(ctx: CanvasRenderingContext2D, x: number, y: number, color: string = PALETTE.text): void {
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, 8, 1); ctx.fillRect(x, y, 1, 5); ctx.fillRect(x + 7, y, 1, 5); ctx.fillRect(x + 1, y + 5, 6, 1); ctx.fillRect(x + 3, y + 6, 2, 1);
+}
+
 /** A checkpoint flag at a cell's top-left; raised flags fly the colour. */
 export function drawFlag(ctx: CanvasRenderingContext2D, x: number, y: number, raised: boolean, color: string): void {
   ctx.fillStyle = PALETTE.tileEdge;

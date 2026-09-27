@@ -18,11 +18,13 @@ import { arcingShots } from './arcing-shots';
 import { homingMissiles } from './homing-missiles';
 import { explosions } from './explosions';
 import { grenades } from './grenades';
+import { creepingEnemies } from './creeping-enemies';
 import { hazards } from './hazards';
 import { landmines } from './landmines';
 import { flameJets } from './flame-jets';
 import { rollingRocks } from './rolling-rocks';
 import { checkpoint } from './checkpoint';
+import { armor } from './armor';
 import { collectibles } from './collectibles';
 import { powerup } from './powerup';
 import { keysAndDoors } from './keys-and-doors';
@@ -42,9 +44,9 @@ export const catalogue: readonly Demo[] = [
   // Movement
   runAndJump, doubleJump, wallClimb, dash, coyoteBuffer, variableJump, ladders, ducking, gliding, flying,
   // Combat
-  rangedWeapon, meleeAttack, hitPoints, enemyPatrol, lasers, arcingShots, homingMissiles, explosions, grenades,
+  rangedWeapon, meleeAttack, hitPoints, enemyPatrol, lasers, arcingShots, homingMissiles, explosions, grenades, creepingEnemies,
   // Items
-  powerup, collectibles, checkpoint,
+  powerup, collectibles, checkpoint, armor,
   // Platforms and surfaces
   movingPlatforms, oneWay, crumblingPlatforms, intervalPlatforms, iceAndSand, conveyorBelts, slides, portals, levers,
   // Hazards and obstacles
