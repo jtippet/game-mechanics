@@ -27,7 +27,7 @@ OLD="${DEST%/}.old"
 tar -C dist -cf - . | ssh "$HOST" "set -e
   rm -rf '$STAGE' '$OLD'
   mkdir -p '$STAGE'
-  tar -C '$STAGE' -xf -
+  tar -C '$STAGE' --no-same-owner -xf -
   chmod -R ug+rw,o+rX '$STAGE'
   find '$STAGE' -type d -exec chmod g+s {} +
   if [ -d '${DEST%/}' ]; then mv '${DEST%/}' '$OLD'; fi
