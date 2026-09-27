@@ -5,6 +5,9 @@ import { variableJump } from './variable-jump';
 import { coyoteBuffer } from './coyote-buffer';
 import { wallClimb } from './wall-climb';
 import { dash } from './dash';
+import { enemyPatrol } from './enemy-patrol';
+import { rangedWeapon } from './ranged-weapon';
+import { meleeAttack } from './melee-attack';
 
 /** Menu order. Adding a demo is one file and one line here. */
 export const catalogue: readonly Demo[] = [
@@ -14,6 +17,9 @@ export const catalogue: readonly Demo[] = [
   coyoteBuffer,
   wallClimb,
   dash,
+  enemyPatrol,
+  rangedWeapon,
+  meleeAttack,
 ];
 
 export function findDemo(id: string): Demo | undefined {
