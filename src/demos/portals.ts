@@ -35,9 +35,9 @@ export class PortalScene extends BaseScene {
 
 export const portals: Demo = {
   id: 'portals',
-  title: 'Portals',
+  title: 'Teleporters',
   category: 'Platforms and surfaces',
-  blurb: 'Two pads linked both ways through the wall, and a one-way pad that lifts you to the ledge and never back.',
+  blurb: 'Step on a pad and you are instantly at its partner. Two pads linked both ways through the wall, and a one-way pad that lifts you to the ledge and never back.',
   controls: BASE_CONTROLS,
   create: () => new PortalScene(),
 };

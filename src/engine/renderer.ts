@@ -27,6 +27,8 @@ export const PALETTE = {
   muted: '#9aa3b8',
   danger: '#e85a5a',
   dangerEdge: '#ff9a8a',
+  poison: '#4fbf5a',
+  poisonBubble: '#a9f0a0',
   ice: '#8fd3ff',
   iceSheen: '#d9f2ff',
   sand: '#c9b27a',
@@ -106,6 +108,15 @@ export function drawLevel(ctx: CanvasRenderingContext2D, level: Level, camera: C
             const cx = x + ((i * 8 + phase) & 15);
             ctx.fillRect(cx, y + 6, 2, 1); ctx.fillRect(cx + (dir > 0 ? 2 : -2), y + 7, 2, 2); ctx.fillRect(cx, y + 9, 2, 1);
           }
+          break;
+        }
+        case 'poison': {
+          // A pool: the liquid fills the lower three quarters of the cell, and its surface bobs a pixel so it reads as wet.
+          const bob = ((ticks >> 4) + col) & 1;
+          ctx.fillStyle = PALETTE.poison;
+          ctx.fillRect(x, y + 4 + bob, TILE, TILE - 4 - bob);
+          ctx.fillStyle = PALETTE.poisonBubble;
+          ctx.fillRect(x + ((col * 5 + (ticks >> 3)) & 15), y + 8 + ((ticks >> 5) & 3), 1, 1);
           break;
         }
         case 'ladder':

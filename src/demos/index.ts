@@ -38,13 +38,16 @@ import { conveyorBelts } from './conveyor-belts';
 import { slides } from './slides';
 import { portals } from './portals';
 import { levers } from './levers';
+import { wraparound } from './wraparound';
+import { damageOverTime } from './damage-over-time';
+import { autoScroll } from './auto-scroll';
 
 /** Menu order. Adding a demo is one file and one line here. */
 export const catalogue: readonly Demo[] = [
   // Movement
   runAndJump, doubleJump, wallClimb, dash, coyoteBuffer, variableJump, ladders, ducking, gliding, flying,
   // Combat
-  rangedWeapon, meleeAttack, hitPoints, enemyPatrol, lasers, arcingShots, homingMissiles, explosions, grenades, creepingEnemies,
+  rangedWeapon, meleeAttack, hitPoints, enemyPatrol, lasers, arcingShots, homingMissiles, explosions, grenades, creepingEnemies, damageOverTime,
   // Items
   powerup, collectibles, checkpoint, armor,
   // Platforms and surfaces
@@ -52,7 +55,7 @@ export const catalogue: readonly Demo[] = [
   // Hazards and obstacles
   hazards, landmines, flameJets, rollingRocks,
   // World
-  parallax, keysAndDoors,
+  parallax, keysAndDoors, wraparound, autoScroll,
 ];
 
 export function findDemo(id: string): Demo | undefined {

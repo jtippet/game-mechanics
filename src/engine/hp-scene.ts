@@ -23,13 +23,25 @@ export class HpScene extends BaseScene {
   protected damage(fromX: number): boolean {
     if (this.dying > 0) return false;
     const landed = this.hp.hurt(fromX);
+    this.checkDeath();
+    return landed;
+  }
+
+  /** One heart gone with no knockback and no invulnerability: for damage that keeps coming (poison), where the usual grace window would swallow every tick but the first. Armor does not help. */
+  protected drain(): boolean {
+    if (this.dying > 0 || this.hp.hp <= 0) return false;
+    this.hp.hp--;
+    this.checkDeath();
+    return true;
+  }
+
+  private checkDeath(): void {
     if (this.hp.hp === 0 && this.dying === 0) {
       this.dying = DEATH_TICKS;
       this.deaths++;
       this.hp.controlLock = DEATH_TICKS;
       this.hp.flicker = true;
     }
-    return landed;
   }
 
   protected tickDying(): boolean {

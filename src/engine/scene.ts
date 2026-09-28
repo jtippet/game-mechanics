@@ -22,6 +22,8 @@ export interface Entity {
 export interface SceneOptions {
   accent?: string;
   player?: (spawn: Vec) => Player;
+  /** Tiles repeat past every edge (see Level.wrap). */
+  wrap?: boolean;
 }
 
 /** Level + player + entities + camera + HUD. Demos extend this and override hooks. */
@@ -35,7 +37,7 @@ export class BaseScene implements Scene {
   accent: string;
 
   constructor(rows: readonly string[], opts: SceneOptions = {}) {
-    this.level = parseLevel(rows);
+    this.level = parseLevel(rows, { wrap: opts.wrap });
     this.accent = opts.accent ?? PALETTE.player;
     this.player = opts.player ? opts.player(this.level.spawn) : new Player(this.level.spawn);
     this.camera = new Camera(VIEW_W, VIEW_H, this.level.pixelWidth, this.level.pixelHeight);
@@ -50,8 +52,7 @@ export class BaseScene implements Scene {
     for (const e of this.entities.slice()) e.update(this, input);
     this.entities = this.entities.filter(e => !e.dead);
     this.afterUpdate(input);
-    const c = center(this.player.body);
-    this.camera.follow(c.x, c.y);
+    this.updateCamera();
   }
 
   draw(ctx: CanvasRenderingContext2D, camera: Camera): void {
@@ -75,6 +76,12 @@ export class BaseScene implements Scene {
 
   hurtByHazard(r: Rect = this.player.body): boolean {
     return hazardAt(this.level, r);
+  }
+
+  /** Runs last each tick. The default camera trails the player inside a dead zone; a scene that drives its own camera overrides this. */
+  protected updateCamera(): void {
+    const c = center(this.player.body);
+    this.camera.follow(c.x, c.y);
   }
 
   protected beforeUpdate(_input: Input): void {}

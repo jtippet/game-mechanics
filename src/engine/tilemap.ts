@@ -3,7 +3,7 @@ import type { Rect, Vec } from './geom';
 import { overlaps } from './geom';
 import { isSolidKind } from './physics';
 
-export type TileKind = 'empty' | 'solid' | 'oneway' | 'spike' | 'climb' | 'door' | 'ice' | 'sand' | 'beltR' | 'beltL' | 'ladder';
+export type TileKind = 'empty' | 'solid' | 'oneway' | 'spike' | 'climb' | 'door' | 'ice' | 'sand' | 'beltR' | 'beltL' | 'ladder' | 'poison';
 
 export interface PortalMarker { id: 'P' | 'Q'; x: number; y: number }
 
@@ -24,18 +24,22 @@ export interface Level {
   turrets: Vec[];          // pixel top-left of each 'T' cell
   pixelWidth: number;
   pixelHeight: number;
+  /** When true the level tiles repeat: a lookup past any edge reads the opposite edge, so bodies collide correctly while straddling the seam. */
+  wrap: boolean;
 }
 
 export interface Cell { col: number; row: number; kind: TileKind }
 
 const CHARS: Record<string, TileKind> = {
   '.': 'empty', '#': 'solid', '-': 'oneway', '^': 'spike', '|': 'climb', 'd': 'door',
-  'i': 'ice', 's': 'sand', '>': 'beltR', '<': 'beltL', 'H': 'ladder',
+  'i': 'ice', 's': 'sand', '>': 'beltR', '<': 'beltL', 'H': 'ladder', 'p': 'poison',
   '@': 'empty', '*': 'empty', 'k': 'empty',
   'L': 'empty', 'P': 'empty', 'Q': 'empty', '~': 'empty', 'M': 'empty', 'F': 'empty', 'R': 'empty', 'T': 'empty',
 };
 
-export function parseLevel(rows: readonly string[]): Level {
+export interface LevelOptions { wrap?: boolean }
+
+export function parseLevel(rows: readonly string[], opts: LevelOptions = {}): Level {
   if (rows.length === 0) throw new Error('level has no rows');
   const cols = rows[0].length;
   const tiles: TileKind[] = [];
@@ -79,11 +83,16 @@ export function parseLevel(rows: readonly string[]): Level {
     cols, rows: rows.length, tiles, spawn, pickups, keys, doors,
     levers, portals, slides, mines, jets, rocks, turrets,
     pixelWidth: cols * TILE, pixelHeight: rows.length * TILE,
+    wrap: opts.wrap ?? false,
   };
 }
 
-/** Out of bounds is solid: every level is boxed in without needing a border. */
+/** Out of bounds is solid: every level is boxed in without needing a border. A wrapping level has no outside: the lookup is taken modulo the level size. */
 export function tileAt(level: Level, col: number, row: number): TileKind {
+  if (level.wrap) {
+    col = ((col % level.cols) + level.cols) % level.cols;
+    row = ((row % level.rows) + level.rows) % level.rows;
+  }
   if (col < 0 || row < 0 || col >= level.cols || row >= level.rows) return 'solid';
   return level.tiles[row * level.cols + col];
 }

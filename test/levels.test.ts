@@ -10,7 +10,7 @@ const REACH_LEVEL = 4;   // cells of horizontal reach when landing level or lowe
 const REACH_UP_1 = 3;    // when rising one tile
 const REACH_UP_2 = 2;    // when rising two tiles
 
-const PASSABLE: TileKind[] = ['empty', 'spike', 'oneway', 'door', 'ladder'];
+const PASSABLE: TileKind[] = ['empty', 'spike', 'oneway', 'door', 'ladder', 'poison'];
 const FLOOR: TileKind[] = ['solid', 'oneway', 'climb', 'ice', 'sand', 'beltR', 'beltL'];
 const passable = (l: Level, c: number, r: number): boolean => PASSABLE.includes(tileAt(l, c, r));
 const standable = (l: Level, c: number, r: number): boolean =>
