@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { catalogue } from '../src/demos';
 import { TILE } from '../src/engine/constants';
 import { BaseScene } from '../src/engine/scene';
-import { tileAt, type Level, type TileKind } from '../src/engine/tilemap';
+import { parseLevel, tileAt, type Level, type TileKind } from '../src/engine/tilemap';
 
 // A single jump rises ~42 px, so two tiles up is the most a step may ask; three is impossible.
 const JUMP_UP = 2;
@@ -21,6 +21,8 @@ const FLIGHT_DEMOS = ['flying'];
 
 /** Coarse flood fill over standable cells from the spawn, using the jump limits above. Ignores walls in between: it is a floor for what a level may demand, not a solver. */
 function reachableStands(l: Level): Set<string> {
+  // A wrapping level's columns are a ring: fold every column into [0, cols) or the fill walks the ring forever.
+  const norm = (c: number): number => l.wrap ? ((c % l.cols) + l.cols) % l.cols : c;
   const start = { c: l.spawn.x / TILE, r: l.spawn.y / TILE };
   const seen = new Set<string>([`${start.c},${start.r}`]);
   const queue = [start];
@@ -29,7 +31,8 @@ function reachableStands(l: Level): Set<string> {
     for (let r2 = Math.max(0, cur.r - JUMP_UP); r2 < l.rows; r2++) {
       const rise = cur.r - r2;
       const reach = rise === 2 ? REACH_UP_2 : rise === 1 ? REACH_UP_1 : REACH_LEVEL;
-      for (let c2 = cur.c - reach; c2 <= cur.c + reach; c2++) {
+      for (let c2raw = cur.c - reach; c2raw <= cur.c + reach; c2raw++) {
+        const c2 = norm(c2raw);
         const k = `${c2},${r2}`;
         if (seen.has(k) || !standable(l, c2, r2)) continue;
         seen.add(k);
@@ -39,6 +42,14 @@ function reachableStands(l: Level): Set<string> {
   }
   return seen;
 }
+
+describe('reachableStands', () => {
+  it('terminates on a wrapping level with an unbroken floor', () => {
+    const l = parseLevel(['....................', '..@.................', '####################'], { wrap: true });
+    const stands = reachableStands(l);
+    expect(stands.size).toBe(20);
+  });
+});
 
 describe('every catalogued level is playable', () => {
   for (const demo of catalogue) {

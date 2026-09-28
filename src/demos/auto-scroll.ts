@@ -8,9 +8,12 @@ export const SCROLL_SPEED = 48;
 /** Ticks the scroll pauses on the dead player before the level restarts. */
 export const DEATH_TICKS = 45;
 
-// 100 columns, 11 rows: one-tile pillars, two-tile pillars, and pits no
-// wider than three, so "hold right and jump at every obstacle" gets
-// through. The shelf at row 5 is above head height on a jump from the floor.
+// 100 columns, 11 rows: one-tile pillars, two-tile pillars, and pits two
+// wide. A player pinned to the screen's right edge only advances at the
+// scroll speed while airborne (37 px per jump), so two tiles (32 px) is the
+// widest pit that "hold right and jump at every obstacle" clears; three is
+// not. Falling into a pit reaches the level's bottom edge, which is death.
+// The shelf at row 5 is above head height on a jump from the floor.
 const LEVEL = [
   '....................................................................................................',
   '....................................................................................................',
@@ -22,7 +25,7 @@ const LEVEL = [
   '....................................................................................................',
   '......................................#.......................#.....................#...............',
   '..@.........#.................#.......#................#......#.................#...#...............',
-  '######################..#####################...######################...###############..##########',
+  '######################..#####################..#######################..################..##########',
 ];
 
 export class AutoScrollScene extends BaseScene {
@@ -53,8 +56,8 @@ export class AutoScrollScene extends BaseScene {
     const right = this.camera.x + VIEW_W;
     // The screen's right edge is a wall: you cannot run ahead of the scroll.
     if (b.x + b.w > right) { b.x = right - b.w; if (b.vx > 0) b.vx = 0; }
-    // Entirely off the left edge is death: a short pause, then the level starts over.
-    if (b.x + b.w < this.camera.x) {
+    // Entirely off the left edge, or down a pit to the level's bottom edge, is death: a short pause, then the level starts over. Once cleared, nothing kills.
+    if (!this.cleared && (b.x + b.w < this.camera.x || b.y + b.h >= this.level.pixelHeight)) {
       this.deaths++;
       this.dying = DEATH_TICKS;
       this.player.flicker = true;

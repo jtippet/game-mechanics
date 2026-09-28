@@ -58,8 +58,11 @@ export class WrapScene extends BaseScene {
     const H = this.level.pixelHeight;
     const dx = b.x < 0 ? W : b.x + b.w > W ? -W : 0;
     const dy = b.y < 0 ? H : b.y + b.h > H ? -H : 0;
-    for (const [ox, oy] of [[dx, 0], [0, dy], [dx, dy]] as Array<[number, number]>) {
-      if (ox === 0 && oy === 0) continue;
+    const offsets: Array<[number, number]> = [];
+    if (dx) offsets.push([dx, 0]);
+    if (dy) offsets.push([0, dy]);
+    if (dx && dy) offsets.push([dx, dy]);
+    for (const [ox, oy] of offsets) {
       ctx.save();
       ctx.translate(ox, oy);
       this.player.draw(ctx);

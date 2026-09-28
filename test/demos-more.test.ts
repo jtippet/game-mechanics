@@ -101,12 +101,19 @@ describe('wraparound room', () => {
     expect(H).toBe(11 * TILE);
   });
 
-  it('draws the body twice while it straddles an edge', () => {
-    const s = wraparound.create() as WrapScene;
-    s.player.body.x = -4;
-    const ctx = stubContext();
-    s.draw(ctx, s.camera);
-    expect(ctx.calls.filter(c => c === 'translate').length).toBeGreaterThanOrEqual(2);   // camera + one ghost
+  it('draws one ghost on an edge and three in a corner, and none in the open', () => {
+    const translates = (x: number, y: number): number => {
+      const s = wraparound.create() as WrapScene;
+      s.player.body.x = x;
+      s.player.body.y = y;
+      const ctx = stubContext();
+      s.draw(ctx, s.camera);
+      return ctx.calls.filter(c => c === 'translate').length;   // the camera's own translate is the +1
+    };
+    expect(translates(100, 100)).toBe(1);
+    expect(translates(-4, 100)).toBe(2);
+    expect(translates(100, -4)).toBe(2);
+    expect(translates(-4, -4)).toBe(4);
   });
 });
 
@@ -121,6 +128,8 @@ describe('damage over time', () => {
     const s = damageOverTime.create() as PoisonScene;
     const input = new Input();
     fallIntoLeftPool(s, input);
+    const firstTouch = s.ticks;
+    const hp0 = s.hp.hp;
     expect(s.poisoned).toBe(true);
     // Land (the touch registers mid-fall), then jump out to the right: the pool is one tile deep.
     while (s.player.body.vy !== 0) step(s, input, []);
@@ -131,9 +140,15 @@ describe('damage over time', () => {
     const leftAtLeave = s.poisonLeft;
     for (let i = 0; i < leftAtLeave; i++) step(s, input, []);
     expect(s.poisoned).toBe(false);
-    expect(s.hp.hp).toBe(hpAtLeave - POISON_TICKS / DRAIN_TICKS);   // exactly five more
+    // The drain clock runs from the first touch, so the hearts lost after leaving are the five of
+    // POISON_TICKS minus however many fell during the dip: the total since the first touch is exact.
+    const poisonedTicks = s.ticks - firstTouch + 1;
+    expect(s.hp.hp).toBe(hp0 - Math.floor(poisonedTicks / DRAIN_TICKS));
+    expect(hpAtLeave - s.hp.hp).toBeGreaterThanOrEqual(POISON_TICKS / DRAIN_TICKS - 1);
+    expect(hpAtLeave - s.hp.hp).toBeLessThanOrEqual(POISON_TICKS / DRAIN_TICKS);
+    const hpAfter = s.hp.hp;
     for (let i = 0; i < 200; i++) step(s, input, []);
-    expect(s.hp.hp).toBe(hpAtLeave - 5);                            // and no more after
+    expect(s.hp.hp).toBe(hpAfter);                                  // and no more after
     expect(s.deaths).toBe(0);
   });
 
@@ -236,6 +251,46 @@ describe('auto-scrolling level', () => {
     expect(s.camera.x).toBe(s.level.pixelWidth - VIEW_W);
     for (let i = 0; i < 120; i++) step(s, input, []);              // once cleared the scroll stops and nothing dies
     expect(s.deaths).toBe(0);
+  });
+
+  it('walking into a pit without jumping is death', () => {
+    const s = autoScroll.create() as AutoScrollScene;
+    const input = new Input();
+    // Hold right and jump only at walls: the first pit (cols 22-23) is walked into.
+    let t = 0;
+    while (s.deaths === 0 && t++ < 900) {
+      const c = s.player['contacts'];
+      step(s, input, c.onGround && c.onWallRight ? ['right', 'jump'] : ['right']);
+    }
+    expect(s.deaths).toBe(1);
+    expect(s.player.body.x).toBeGreaterThan(21 * TILE);              // it died in the pit, not by falling behind
+    expect(s.player.body.x).toBeLessThan(24 * TILE);
+  });
+
+  it('every pit is clearable by a player pinned to the screen edge', () => {
+    const pits = [22, 45, 70, 88];
+    for (const pit of pits) {
+      const s = autoScroll.create() as AutoScrollScene;
+      const input = new Input();
+      // Start pinned to the right edge six tiles before the pit, on the floor.
+      s.camera.x = Math.max(0, (pit - 6) * TILE - VIEW_W);
+      s.player.moveTo({ x: (pit - 6) * TILE, y: 9 * TILE });
+      let t = 0;
+      while (s.player.body.x < (pit + 3) * TILE && s.deaths === 0 && t++ < 600) bot(s, input);
+      expect(s.deaths, `pit at col ${pit}`).toBe(0);
+      expect(s.player.body.x, `pit at col ${pit}`).toBeGreaterThanOrEqual((pit + 3) * TILE);
+    }
+  });
+
+  it('once cleared, nothing kills', () => {
+    const s = autoScroll.create() as AutoScrollScene;
+    const input = new Input();
+    let t = 0;
+    while (!s.cleared && t++ < 60 * 40) bot(s, input);
+    expect(s.cleared).toBe(true);
+    for (let i = 0; i < 600; i++) step(s, input, i % 40 < 8 ? ['left', 'jump'] : ['left']);
+    expect(s.deaths).toBe(0);
+    expect(s.cleared).toBe(true);
   });
 
   it('a wall the scroll pushes you into kills you', () => {
